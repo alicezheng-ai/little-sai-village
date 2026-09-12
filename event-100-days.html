@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sai's 100 Days Celebration — Little Sai and His Village of Love</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="site-nav__mark">Little Sai <span>&amp; His Village of Love</span></a>
+  <ul class="site-nav__links">
+    <li><a href="events.html" aria-current="page">Events</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li><a href="wishes.html">Wishes</a></li>
+    <li><a href="photos.html">Photos</a></li>
+  </ul>
+</nav>
+
+<header class="hero" style="padding-bottom: 20px;">
+  <div class="hero__inner">
+    <p class="lede" style="margin-bottom:6px;"><a href="events.html">&larr; All events</a></p>
+    <h1>Sai's 100 Days Celebration</h1>
+    <p class="lede">The village's first gathering for Sai — a lunch to mark his first hundred days.</p>
+    <a class="btn btn--primary" href="#rsvp">RSVP on Partiful</a>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap logistics">
+    <h2>Logistics</h2>
+    <dl>
+      <dt>Date</dt>
+      <dd>Sunday, September 20, 2026 <span class="todo">confirm time</span></dd>
+      <dt>Venue</dt>
+      <dd>TODO — venue name and address <span class="todo">TODO</span></dd>
+      <dt>Parking</dt>
+      <dd>TODO — parking or transit notes <span class="todo">TODO</span></dd>
+      <dt>What to wear</dt>
+      <dd>TODO — dress code, if any <span class="todo">TODO</span></dd>
+    </dl>
+  </div>
+</section>
+
+<section class="band band--deep" id="rsvp">
+  <div class="wrap center">
+    <h2>RSVP</h2>
+    <p>Please let us know you're coming so we can plan the food and seating.</p>
+    <a class="btn btn--gold" href="#" target="_blank" rel="noopener">
+      Open the Partiful invite <!-- TODO: replace href with your Partiful event link -->
+    </a>
+    <p style="margin-top:14px; font-size:0.9rem; color:var(--ink-soft);">Please RSVP by <strong>TODO date</strong>.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <h2>Menu</h2>
+    <p>Both options will be served — let us know in your RSVP if you have other dietary needs.</p>
+    <div data-menu-tabs class="menu-tabs" role="tablist" aria-label="Menu options">
+      <button class="menu-tab" role="tab" aria-selected="true" data-target="menu-veg">Vegetarian</button>
+      <button class="menu-tab" role="tab" aria-selected="false" data-target="menu-nonveg">Non-Vegetarian</button>
+    </div>
+    <div class="menu-panel" id="menu-veg" data-active="true" role="tabpanel">
+      <ul>
+        <li>TODO — vegetarian dish 1</li>
+        <li>TODO — vegetarian dish 2</li>
+        <li>TODO — vegetarian dish 3</li>
+        <li>TODO — dessert</li>
+      </ul>
+    </div>
+    <div class="menu-panel" id="menu-nonveg" data-active="false" role="tabpanel">
+      <ul>
+        <li>TODO — non-vegetarian dish 1</li>
+        <li>TODO — non-vegetarian dish 2</li>
+        <li>TODO — non-vegetarian dish 3</li>
+        <li>TODO — dessert</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band band--deep">
+  <div class="wrap">
+    <h2>Programming</h2>
+    <ol class="schedule">
+      <li><time>11:00 AM</time>Arrival &amp; mingling <span class="todo">TODO</span></li>
+      <li><time>11:30 AM</time>Blessing &amp; welcome <span class="todo">TODO</span></li>
+      <li><time>12:00 PM</time>Lunch is served <span class="todo">TODO</span></li>
+      <li><time>1:00 PM</time>Games &amp; toasts <span class="todo">TODO</span></li>
+      <li><time>2:00 PM</time>Cake &amp; farewells <span class="todo">TODO</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="duo">
+      <div class="card">
+        <h3>Were you there?</h3>
+        <p>Add your photos from the day to the shared album.</p>
+        <a class="btn btn--gold" href="photos.html">Add photos</a>
+      </div>
+      <div class="card">
+        <h3>Say something to Sai</h3>
+        <p>Leave him a note about this day, for him to read later.</p>
+        <a class="btn btn--primary" href="wishes.html">Write a wish</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p><a href="events.html">&larr; All events</a> &middot; <a href="index.html">Home</a></p>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
