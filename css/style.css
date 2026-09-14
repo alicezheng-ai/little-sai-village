@@ -143,7 +143,7 @@ button:focus-visible {
 .bloom span {
   position: absolute;
   border-radius: var(--radius-organic);
-  filter: blur(38px);
+  filter: blur(44px);
   mix-blend-mode: multiply;
   opacity: 0;
   animation: bloom-in 2.4s ease-out forwards;
@@ -151,11 +151,16 @@ button:focus-visible {
 .bloom span:nth-child(1) { width: 340px; height: 300px; top: -60px; left: -80px; background: var(--gold-soft); animation-delay: 0.1s; }
 .bloom span:nth-child(2) { width: 260px; height: 300px; top: 20px; right: -60px; background: var(--rose); opacity: 0; animation-delay: 0.35s; }
 .bloom span:nth-child(3) { width: 300px; height: 240px; bottom: -80px; left: 20%; background: var(--pine); opacity: 0; animation-delay: 0.55s; }
+.bloom span:nth-child(4) { width: 210px; height: 190px; top: 32%; right: 6%; background: var(--rose-deep); opacity: 0; animation-delay: 0.75s; }
 
 @keyframes bloom-in {
   from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 0.28; transform: scale(1); }
+  to { opacity: 0.34; transform: scale(1); }
 }
+
+/* ---------- Doodle accent — a small hand-drawn mark, used sparingly ---------- */
+.doodle { display: block; margin: 0 auto 16px; }
+.doodle--start { margin: 0 0 12px; }
 
 /* ---------- Hero ---------- */
 .hero {

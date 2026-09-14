@@ -37,8 +37,8 @@ function renderAge() {
    whatever the village wants remembered — and it grows the tree on the
    home page and the full timeline automatically. Keep dates in order. */
 const MILESTONES = [
-  { date: "2026-06-12", label: "Born", note: "Kunming roots, Seattle home — Sai arrives." },
-  { date: "2026-09-20", label: "100 Days Celebration", note: "The village gathers for the first time. Details on the Events page." },
+  { date: "2026-06-12", label: "Born", note: "Kunming roots, Seattle home — the very start of the tree." },
+  { date: "2026-09-19", label: "100 Days — his first branch", note: "The village gathers for the first time, with a few traditions along the way. Details on the Events page." },
   // { date: "YYYY-MM-DD", label: "Next milestone", note: "One line about it." },
 ];
 
