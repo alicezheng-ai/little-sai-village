@@ -6,7 +6,7 @@ A small, plain-HTML site meant to live on GitHub Pages forever. No build step, n
 
 1. Create a GitHub repo (e.g. `little-sai-village`) and push everything in this folder to its `main` branch, root level.
 2. In the repo, go to **Settings → Pages**, set Source to `main` branch / `/ (root)`, and save.
-3. Your site will be live at `https://alicezheng-ai.github.io/little-sai-village/` within a minute or two.
+3. Your site will be live at `<a href="https://alicezheng-ai.github.io/little-sai-village/">[Link Text](https://alicezheng-ai.github.io/little-sai-village/)</a>` within a minute or two.
 
 ## Fill in the placeholders
 
