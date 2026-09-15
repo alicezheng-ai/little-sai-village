@@ -12,14 +12,24 @@ Live at: [https://alicezheng-ai.github.io/little-sai-village/](https://alicezhen
 ## What's already filled in
 
 - 100 Days event: venue, date/time, parking, dress code, RSVP (Partiful), schedule, traditions, and menu are all real.
-- Monthly videos: all three Google Drive embeds are wired up on both `videos.html` and the homepage strip.
-- Wishes: the Google Form is embedded, with a direct-link fallback underneath it.
-- Photos: the Google Photos album link is live.
+- Monthly videos: all three Google Drive embeds are wired up on both `videos.html` and the homepage strip, sized to keep their true 9:16 proportion.
+- Wishes: a button opens the wish form directly (no embed). A short "words from the village" banner sits below it once you add some.
+- Photos: no standalone page. Guests can add photos through the photo form, view the shared album directly, or just send them to Alice or Sid. Both links live in the "Photos" card on the homepage and the event page.
+- Sai's exact birthdate is never shown anywhere on the site — the homepage age counter and the timeline both keep it vague on purpose (see below).
 
 ## Still open
 
-- **`wishes.html`** — the "Read the village's wishes" button still needs a link. Share the form's response Google Sheet as "anyone with the link can view," then paste that link in for the `href="#"` marked `TODO` near the bottom of the file.
 - **`event-100-days.html`** — an RSVP deadline line is commented out near the RSVP button, in case you want to add one later.
+
+## Add a wish to the rotating banner
+
+Open `js/main.js` and add a line to the `WISHES` array:
+
+```js
+"May you always find your way back to the people who love you.",
+```
+
+No names — just the message. The banner hides itself automatically until there's at least one wish in the array, and rotates through them if there's more than one.
 
 ## Add a new event
 
@@ -37,10 +47,10 @@ Copy one `.video-card` block in `videos.html` (and, if you want it on the home p
 Open `js/main.js` and add a line to the `MILESTONES` array near the top:
 
 ```js
-{ date: "2027-01-15", label: "First steps", note: "One line about it." },
+{ date: "2027-01-15", display: "January 2027", label: "First steps", note: "One line about it." },
 ```
 
-The tree on the home page updates automatically — no HTML editing needed.
+`date` only controls the sort order and is never shown — `display` is the text that actually appears, so you can keep any date as vague or exact as you'd like. The tree on the home page updates automatically, no HTML editing needed.
 
 ## Design notes
 

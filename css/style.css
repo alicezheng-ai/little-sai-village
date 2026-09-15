@@ -251,11 +251,14 @@ button:focus-visible {
 
 /* ---------- Video grid ---------- */
 .video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 20px;
 }
 .video-card {
+  width: 100%;
+  max-width: 280px;
   background: var(--card);
   border-radius: 18px;
   overflow: hidden;
@@ -351,7 +354,7 @@ button:focus-visible {
 .tree__node time { display: block; font-family: var(--font-display); color: var(--pine-deep); margin-bottom: 2px; }
 .tree__node p { margin: 0; color: var(--ink-soft); }
 
-/* ---------- Two-up callout (photos / wishes) ---------- */
+/* ---------- Two-up callout (used on event pages for paired actions) ---------- */
 .duo {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -374,6 +377,18 @@ button:focus-visible {
   text-align: center;
   color: var(--ink-soft);
 }
+
+/* ---------- Rotating wish banner ---------- */
+.wish-banner {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-style: italic;
+  max-width: 46ch;
+  margin: 0 auto;
+  min-height: 2.6em;
+  transition: opacity 0.5s ease;
+}
+.wish-banner.is-fading { opacity: 0; }
 
 /* ---------- Footer ---------- */
 .site-footer {
