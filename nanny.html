@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nanny Guide — Little Sai and His Village of Love</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* Page-scoped additions for the nanny guide — reuses the site's own
+     tokens (colors, radius, fonts) from css/style.css, adds only the
+     pieces that page doesn't already have a component for. */
+
+  .jump {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 24px 6px;
+    max-width: 960px;
+    margin: 0 auto 8px;
+    scrollbar-width: none;
+  }
+  .jump::-webkit-scrollbar { display: none; }
+  .jump a {
+    flex: none;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--rose-deep);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 14px;
+    white-space: nowrap;
+  }
+
+  .stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    background: var(--card);
+    border-radius: var(--radius-organic);
+    padding: 14px 26px;
+    box-shadow: 0 18px 34px -22px rgba(43, 33, 28, 0.35);
+    margin: 4px 0 16px;
+  }
+  .stat .num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.2rem;
+    color: var(--rose-deep);
+    line-height: 1;
+  }
+  .stat .label {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    max-width: 15em;
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+  figure.photo { margin: 0; }
+  figure.photo img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 14px;
+    display: block;
+    border: 1px solid var(--line);
+  }
+  figure.photo figcaption {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  ul.plain { list-style: none; margin: 0; padding: 0; }
+  ul.plain li { position: relative; padding: 8px 0 8px 20px; }
+  ul.plain li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 18px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rose);
+  }
+
+  ul.checklist { list-style: none; margin: 0 0 8px; padding: 0; }
+  ul.checklist li { padding: 14px 0; border-top: 1px solid var(--line); }
+  ul.checklist li:first-child { border-top: none; }
+  ul.checklist label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: var(--font-body);
+  }
+  ul.checklist input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 2px;
+    accent-color: var(--rose-deep); flex: none;
+  }
+  .task-detail { margin: 8px 0 0 28px; color: var(--ink-soft); font-size: 0.92rem; max-width: 38em; }
+  .photo-grid.nested { margin-left: 28px; }
+  ul.checklist li.done .task-title { text-decoration: line-through; color: var(--ink-soft); }
+
+  textarea#todaysTasks {
+    width: 100%; min-height: 100px; resize: vertical;
+    border: 1px solid var(--line); border-radius: 14px;
+    background: var(--card); color: var(--ink);
+    font-family: var(--font-body); font-size: 0.98rem; line-height: 1.5;
+    padding: 14px;
+  }
+  .task-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  #taskStatus { font-size: 0.82rem; color: var(--pine-deep); min-height: 1.2em; }
+  #resetTasks { background: none; border: none; color: var(--rose-deep); font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 4px 0; }
+  #resetTasks:hover { text-decoration: underline; }
+
+  .device-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: -6px; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="site-nav__mark">Little Sai <span>&amp; His Village of Love</span></a>
+  <ul class="site-nav__links">
+    <li><a href="events.html">Events</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li><a href="wishes.html">Wishes</a></li>
+  </ul>
+</nav>
+
+<header class="hero" style="padding-bottom: 12px;">
+  <div class="bloom" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div class="hero__inner">
+    <h1>Baby Sai's Care Guide</h1>
+    <p class="lede">Welcome to the Zheng-Verma household! We're grateful for your help — thank you for taking care of our baby boy. He's a sweet little guy who loves smiling.</p>
+    <p class="lede">This guide covers what you need for a shift with baby Sai. Read it through once before your first visit, then use the links below to jump to anything you need.</p>
+    <div class="age-counter" data-age-counter aria-live="polite">
+      <span class="age-counter__num">calculating…</span>
+    </div>
+  </div>
+</header>
+
+<nav class="jump">
+  <a href="#parking">Parking</a>
+  <a href="#arrival">Arrival</a>
+  <a href="#wake">Wake windows</a>
+  <a href="#feeding">Feeding</a>
+  <a href="#diapers">Diapers</a>
+  <a href="#sleep">Sleep</a>
+  <a href="#tips">Tips</a>
+  <a href="#tasks">Tasks</a>
+  <a href="#log">Log</a>
+</nav>
+
+<section class="band" id="parking">
+  <div class="wrap">
+    <div class="section-head"><h2>Parking</h2></div>
+    <div class="card">
+      <p>This townhome has two sides: the front of the house, and the back, where the garage is. Park in front of the house — street parking here is free.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band band--deep" id="arrival">
+  <div class="wrap">
+    <div class="section-head"><h2>Arrival</h2></div>
+    <div class="card">
+      <ul class="plain">
+        <li>Wash your hands as soon as you get in — his immune system is still developing.</li>
+        <li>The house has three floors. Baby Sai's changing station and dresser are upstairs in the nursery, and the laundry machine is also upstairs. His bassinet is in the master bedroom, across the hallway from the nursery.</li>
+        <li>The guest bathroom on the bottom floor is yours to use.</li>
+        <li>Snacks and drinks on the counter and in the fridge are yours too — help yourself any time.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="wake">
+  <div class="wrap">
+    <div class="section-head"><h2>Wake windows</h2></div>
+    <div class="stat">
+      <span class="num">60–90</span>
+      <span class="label">minutes awake before he's ready to wind down, at his current age</span>
+    </div>
+    <p>Track how long it's been since his last nap ended, and start the wind-down routine as he approaches that range. Catching the window matters more than the clock — an overtired baby fights sleep harder.</p>
+  </div>
+</section>
+
+<section class="band band--deep" id="feeding">
+  <div class="wrap">
+    <div class="section-head"><h2>Feeding</h2></div>
+    <div class="card">
+      <p>If Alice is home, she'll breastfeed baby Sai directly. If she's unavailable — on a call, out of the house — warm up milk or use formula; either is fine.</p>
+      <p>If he's hungry and crying hard, formula is usually the faster option, since the electric kettle heats water quickly. Start with 2 oz and offer more if he wants it.</p>
+      <p>Warming breastmilk from the fridge door takes about 4 minutes. Warm whichever bag is dated oldest first.</p>
+      <p>Clean bottles are stored next to the bottle washing machine, right by the sink. There's also an electric bottle warmer if you'd rather use it directly on a bottle.</p>
+      <div class="photo-grid">
+        <figure class="photo"><img src="images/nanny/clean-bottles-sink.jpg" alt="Clean bottles on the rack next to the sink" loading="lazy"><figcaption>Clean bottles, by the sink</figcaption></figure>
+        <figure class="photo"><img src="images/nanny/bottle-warmer.jpg" alt="Electric bottle warmer" loading="lazy"><figcaption>Bottle warmer</figcaption></figure>
+      </div>
+      <span class="todo">Baby Sai is almost exclusively breastfed and may reject the bottle entirely — formula or breastmilk. That's fine if it happens.</span>
+      <p style="margin-top:12px;">If Alice will be back within two hours, it's fine to wait for her. If she'll be gone longer, try the other option — formula, then breastmilk, or vice versa — if he keeps refusing. He's usually hungry about every two hours, so keep offering periodically.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="diapers">
+  <div class="wrap">
+    <div class="section-head"><h2>Diaper changes</h2></div>
+    <div class="card">
+      <p>The changing station is the dresser in the nursery, shown below.</p>
+      <div class="photo-grid">
+        <figure class="photo"><img src="images/nanny/changing-station.jpg" alt="Dresser and changing station in the nursery" loading="lazy"><figcaption>Dresser &amp; changing station</figcaption></figure>
+        <figure class="photo"><img src="images/nanny/changing-pad.jpg" alt="Close-up of the changing pad" loading="lazy"><figcaption>Changing pad</figcaption></figure>
+      </div>
+      <p>Used diapers go in the Diaper Genie next to the dresser.</p>
+      <div class="photo-grid">
+        <figure class="photo"><img src="images/nanny/diaper-pail.jpg" alt="Diaper Genie pail" loading="lazy"><figcaption>Diaper Genie</figcaption></figure>
+      </div>
+      <span class="todo">After a poop diaper, apply Vaseline before closing the new one.</span>
+    </div>
+  </div>
+</section>
+
+<section class="band band--deep" id="sleep">
+  <div class="wrap">
+    <div class="section-head"><h2>Sleep &amp; swaddle</h2></div>
+    <div class="card">
+      <p>Baby Sai sleeps in a Love to Dream transition swaddle. For the first nap of the day, leave one arm out; for the second nap, leave the other arm out.</p>
+      <p>If he's fighting sleep, pick him up and bounce gently on the yoga ball. Turn the sound machine to its second setting — the combination usually settles him.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="tips">
+  <div class="wrap">
+    <div class="section-head"><h2>Other tips</h2></div>
+    <div class="card">
+      <p>Baby Sai is a contact napper. If a nap runs short — 10 to 20 minutes — consider holding him through it instead of waiting him out. One full sleep cycle is close to 40–45 minutes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band band--deep" id="tasks">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Tasks</h2>
+      <p>Routine chores for the shift, plus anything specific for today.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="display:flex; align-items:center; justify-content:space-between;">Routine tasks <button type="button" id="resetTasks">Reset for new shift</button></h3>
+      <ul class="checklist" id="routineList">
+        <li>
+          <label><input type="checkbox" id="task1"> <span class="task-title">Baby Sai's laundry</span></label>
+          <p class="task-detail">A laundry pod should already be pulled out; if not, extras are in the hallway storage. Run the load, then pull out anything that can't go in the dryer and hang it on the rack beside it. Once dry, sort into his dresser under the changing station — 0–3m on the top left, 3–6m on the top right, burp cloths middle left.</p>
+        </li>
+        <li>
+          <label><input type="checkbox" id="task2"> <span class="task-title">Wash bottles</span></label>
+          <p class="task-detail">The machine is usually pre-loaded with dirty bottles. Add a tablet, fill the water tank to the max line — an underfilled tank can interrupt the cycle — and press Standard to start.</p>
+          <div class="photo-grid nested">
+            <figure class="photo"><img src="images/nanny/loaded-machine.jpg" alt="Bottle washing machine loaded and ready" loading="lazy"><figcaption>Loaded machine</figcaption></figure>
+            <figure class="photo"><img src="images/nanny/water-tank.jpg" alt="Lifting the tray to reach the water tank" loading="lazy"><figcaption>Water tank fill lines</figcaption></figure>
+            <figure class="photo"><img src="images/nanny/detergent-tablet.jpg" alt="Detergent tablet for the bottle washing machine" loading="lazy"><figcaption>Detergent tablet</figcaption></figure>
+          </div>
+        </li>
+      </ul>
+
+      <h3>Additional tasks</h3>
+      <textarea id="todaysTasks" placeholder="Anything extra for this shift — filled in by Alice before you arrive."></textarea>
+      <div class="task-footer">
+        <span id="taskStatus" role="status"></span>
+        <button type="button" class="btn btn--pine" id="saveTasks">Save on this device</button>
+      </div>
+      <p class="device-note">This page is static, so anything typed or checked here stays on this device only — it won't sync to your phone. For a task list you can update remotely and have any device see, use the <a href="https://claude.ai/artifact/UYKJbkPbYz9w6EN3wLrapt" target="_blank" rel="noopener">live guide</a> instead.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="log">
+  <div class="wrap">
+    <div class="section-head"><h2>Log diapers &amp; naps</h2></div>
+    <div class="card">
+      <p>Use the tracker to log diaper changes and naps during your shift.</p>
+      <a class="btn btn--gold" href="https://alicezheng-ai.github.io/baby-is-figureoutable/" target="_blank" rel="noopener">Open the log</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>Kept with love, for whoever's watching him today. &middot; <a href="index.html">Home</a></p>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+  (function () {
+    // Checklist done/open state (local to this page load)
+    function syncDone(cb) {
+      var li = cb.closest('li');
+      if (li) li.classList.toggle('done', cb.checked);
+    }
+    var boxes = document.querySelectorAll('#routineList input[type="checkbox"]');
+    var STORE_KEY = 'sai-nanny-guide-tasks';
+
+    function loadState() {
+      try {
+        var raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        var state = JSON.parse(raw);
+        if (state.task1) document.getElementById('task1').checked = true;
+        if (state.task2) document.getElementById('task2').checked = true;
+        if (state.notes) document.getElementById('todaysTasks').value = state.notes;
+      } catch (e) { /* ignore */ }
+    }
+    loadState();
+    boxes.forEach(function (cb) { syncDone(cb); cb.addEventListener('change', function () { syncDone(cb); }); });
+
+    document.getElementById('resetTasks').addEventListener('click', function () {
+      boxes.forEach(function (cb) { cb.checked = false; syncDone(cb); });
+    });
+
+    document.getElementById('saveTasks').addEventListener('click', function () {
+      var status = document.getElementById('taskStatus');
+      try {
+        var state = {
+          task1: document.getElementById('task1').checked,
+          task2: document.getElementById('task2').checked,
+          notes: document.getElementById('todaysTasks').value
+        };
+        localStorage.setItem(STORE_KEY, JSON.stringify(state));
+        status.textContent = 'Saved on this device';
+      } catch (e) {
+        status.textContent = "Couldn't save on this device";
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>
