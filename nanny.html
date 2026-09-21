@@ -144,7 +144,7 @@
   <div class="bloom" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
   <div class="hero__inner">
     <h1>Baby Sai's Care Guide</h1>
-    <p class="lede">Welcome to the Zheng-Verma household! We're grateful for your help — thank you for taking care of our baby boy. He's a sweet little guy who loves smiling.</p>
+    <p class="lede">Welcome to the household! We're grateful for your help — thank you for taking care of our baby boy. He's a sweet little guy who loves smiling.</p>
     <p class="lede">This guide covers what you need for a shift with baby Sai. Read it through once before your first visit, then use the links below to jump to anything you need.</p>
     <div class="age-counter" data-age-counter aria-live="polite">
       <span class="age-counter__num">calculating…</span>
@@ -202,7 +202,7 @@
   <div class="wrap">
     <div class="section-head"><h2>Feeding</h2></div>
     <div class="card">
-      <p>If Alice is home, she'll breastfeed baby Sai directly. If she's unavailable — on a call, out of the house — warm up milk or use formula; either is fine.</p>
+      <p>If mom is home, she'll breastfeed baby Sai directly. If she's unavailable — on a call, out of the house — warm up milk or use formula; either is fine.</p>
       <p>If he's hungry and crying hard, formula is usually the faster option, since the electric kettle heats water quickly. Start with 2 oz and offer more if he wants it.</p>
       <p>Warming breastmilk from the fridge door takes about 4 minutes. Warm whichever bag is dated oldest first.</p>
       <p>Clean bottles are stored next to the bottle washing machine, right by the sink. There's also an electric bottle warmer if you'd rather use it directly on a bottle.</p>
@@ -211,7 +211,7 @@
         <figure class="photo"><img src="https://raw.githubusercontent.com/alicezheng-ai/little-sai-village/main/images/nanny/bottle-warmer.jpg" alt="Electric bottle warmer" loading="lazy"><figcaption>Bottle warmer</figcaption></figure>
       </div>
       <span class="todo">Baby Sai is almost exclusively breastfed and may reject the bottle entirely — formula or breastmilk. That's fine if it happens.</span>
-      <p style="margin-top:12px;">If Alice will be back within two hours, it's fine to wait for her. If she'll be gone longer, try the other option — formula, then breastmilk, or vice versa — if he keeps refusing. He's usually hungry about every two hours, so keep offering periodically.</p>
+      <p style="margin-top:12px;">If mom will be back within two hours, it's fine to wait for her. If she'll be gone longer, try the other option — formula, then breastmilk, or vice versa — if he keeps refusing. He's usually hungry about every two hours, so keep offering periodically.</p>
     </div>
   </div>
 </section>
@@ -257,11 +257,14 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Tasks</h2>
-      <p>Routine chores for the shift, plus anything specific for today.</p>
+      <p>Routine chores for the shift, plus anything specific for today (synced live via Google Doc).</p>
     </div>
 
     <div class="card">
-      <h3 style="display:flex; align-items:center; justify-content:space-between;">Routine tasks <button type="button" id="resetTasks">Reset for new shift</button></h3>
+      <h3 style="display:flex; align-items:center; justify-content:space-between;">
+        Routine tasks 
+        <button type="button" id="resetTasks">Reset for new shift</button>
+      </h3>
       <ul class="checklist" id="routineList">
         <li>
           <label><input type="checkbox" id="task1"> <span class="task-title">Baby Sai's laundry</span></label>
@@ -279,12 +282,11 @@
       </ul>
 
       <h3>Additional tasks</h3>
-      <textarea id="todaysTasks" placeholder="Anything extra for this shift — filled in by Alice before you arrive."></textarea>
+      <textarea id="todaysTasks" placeholder="Loading tasks from Google Doc..."></textarea>
       <div class="task-footer">
-        <span id="taskStatus" role="status"></span>
-        <button type="button" class="btn btn--pine" id="saveTasks">Save on this device</button>
+        <span id="taskStatus" role="status">Synced with Google Doc</span>
+        <button type="button" class="btn btn--pine" id="saveTasks">Save & Sync Tasks</button>
       </div>
-      <p class="device-note">This page is static, so anything typed or checked here stays on this device only — it won't sync to your phone. For a task list you can update remotely and have any device see, use the <a href="https://claude.ai/artifact/UYKJbkPbYz9w6EN3wLrapt" target="_blank" rel="noopener">live guide</a> instead.</p>
     </div>
   </div>
 </section>
@@ -306,45 +308,56 @@
 <script src="js/main.js"></script>
 <script>
   (function () {
-    // Checklist done/open state (local to this page load)
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLlfOHMFPxUWpjqA63xhQdLYod2HEn-n3D4mnzCwdTQX9CiL6hqqhP4KO913stS1qz/exec';
+
     function syncDone(cb) {
       var li = cb.closest('li');
       if (li) li.classList.toggle('done', cb.checked);
     }
-    var boxes = document.querySelectorAll('#routineList input[type="checkbox"]');
-    var STORE_KEY = 'sai-nanny-guide-tasks';
 
-    function loadState() {
-      try {
-        var raw = localStorage.getItem(STORE_KEY);
-        if (!raw) return;
-        var state = JSON.parse(raw);
-        if (state.task1) document.getElementById('task1').checked = true;
-        if (state.task2) document.getElementById('task2').checked = true;
-        if (state.notes) document.getElementById('todaysTasks').value = state.notes;
-      } catch (e) { /* ignore */ }
-    }
-    loadState();
-    boxes.forEach(function (cb) { syncDone(cb); cb.addEventListener('change', function () { syncDone(cb); }); });
+    var boxes = document.querySelectorAll('#routineList input[type="checkbox"]');
+    var todaysTasks = document.getElementById('todaysTasks');
+    var taskStatus = document.getElementById('taskStatus');
+
+    boxes.forEach(function (cb) {
+      syncDone(cb);
+      cb.addEventListener('change', function () { syncDone(cb); });
+    });
 
     document.getElementById('resetTasks').addEventListener('click', function () {
       boxes.forEach(function (cb) { cb.checked = false; syncDone(cb); });
     });
 
-    document.getElementById('saveTasks').addEventListener('click', function () {
-      var status = document.getElementById('taskStatus');
+    // Fetch tasks from Google Doc on page load
+    async function fetchTasks() {
+      taskStatus.textContent = 'Fetching tasks from Google Doc...';
       try {
-        var state = {
-          task1: document.getElementById('task1').checked,
-          task2: document.getElementById('task2').checked,
-          notes: document.getElementById('todaysTasks').value
-        };
-        localStorage.setItem(STORE_KEY, JSON.stringify(state));
-        status.textContent = 'Saved on this device';
-      } catch (e) {
-        status.textContent = "Couldn't save on this device";
+        const res = await fetch(APPS_SCRIPT_URL);
+        const data = await res.json();
+        todaysTasks.value = data.text || '';
+        taskStatus.textContent = 'Synced with Google Doc';
+      } catch (err) {
+        taskStatus.textContent = 'Unable to fetch tasks from Google Doc';
+      }
+    }
+
+    // Save tasks to Google Doc
+    document.getElementById('saveTasks').addEventListener('click', async function () {
+      taskStatus.textContent = 'Saving to Google Doc...';
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: todaysTasks.value })
+        });
+        taskStatus.textContent = 'Saved to Google Doc!';
+      } catch (err) {
+        taskStatus.textContent = 'Error saving tasks';
       }
     });
+
+    fetchTasks();
   })();
 </script>
 
