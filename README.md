@@ -1,7 +1,8 @@
 # Jujube Log
 
-A home-screen web app for logging Sleep, Breastfeed, and Diaper, built to replace
-Nara Baby before it starts charging. Data is written in Nara's own column format, so
+A home-screen web app for logging Sleep, Breastfeed, Diaper, Bath, and Medicine,
+built to replace Nara Baby before it starts charging. Data is written in Nara's own
+column format, so
 [understand-infant-sleep](https://github.com/alicezheng-ai/understand-infant-sleep)
 keeps working against it unchanged.
 
@@ -28,13 +29,16 @@ keeps working against it unchanged.
 - Installs to the home screen; light/dark follows the phone's system setting
 - Styled around the watercolor piece of Sai by the lake — same warm ivory paper and
   soft palette throughout, light or dark
+- Bath as a one-tap timestamped log, same shape as Diaper
+- Medicine: set a current medication and dosing interval once, then log each dose
+  in one tap — the row shows time since the last dose and a live countdown to the
+  next one, right on the home screen
 
 ## Roadmap
 
 - [x] **Day 1 — Core logging**, expanded with editing, notes, backfill, and a
   Today/24h summary per the workflow details above.
-- [ ] **Day 2 — Bath and Medicine.** Bath as a simple timestamped log; Medicine with
-  a dosing interval and a countdown to the next dose.
+- [x] **Day 2 — Bath and Medicine**, as described above.
 - [ ] **Day 3 — Action screen v1.** Rule-based "what's likely going on" reading —
   elapsed time since the last event, compared against Sai's own recent averages.
 - [ ] **Day 4 — Sleep-trend flag.** A longer-horizon, week-over-week check for

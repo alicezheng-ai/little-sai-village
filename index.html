@@ -28,6 +28,8 @@
     --coral-soft: rgba(201,122,82,0.14);
     --gold: #c39a4a;
     --gold-soft: rgba(195,154,74,0.18);
+    --clay: #b98a72;
+    --clay-soft: rgba(185,138,114,0.16);
     --radius: 16px;
     --shadow: 0 2px 10px rgba(74,64,56,0.08);
   }
@@ -48,6 +50,8 @@
       --coral-soft: rgba(217,146,104,0.18);
       --gold: #d4b06c;
       --gold-soft: rgba(212,176,108,0.2);
+      --clay: #cf9d84;
+      --clay-soft: rgba(207,157,132,0.18);
       --shadow: 0 2px 14px rgba(0,0,0,0.35);
     }
   }
@@ -141,6 +145,8 @@
   .row-active-sky{ background: linear-gradient(160deg, var(--sky-soft), transparent 75%); }
   .row-active-gold{ background: linear-gradient(160deg, var(--gold-soft), transparent 75%); }
   .row-active-coral{ background: linear-gradient(160deg, var(--coral-soft), transparent 75%); }
+  .row-active-sage{ background: linear-gradient(160deg, var(--sage-soft), transparent 75%); }
+  .row-active-clay{ background: linear-gradient(160deg, var(--clay-soft), transparent 75%); }
 
   .row-active-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
 
@@ -212,6 +218,8 @@
   .dot.sleep{ background: var(--sky); }
   .dot.feed{ background: var(--gold); }
   .dot.diaper{ background: var(--coral); }
+  .dot.bath{ background: var(--sage); }
+  .dot.medicine{ background: var(--clay); }
 
   .entry-text{ font-size: 0.92rem; font-weight:600; }
   .entry-detail{ font-size: 0.78rem; color: var(--ink-faint); margin-top: 1px; }
@@ -239,6 +247,8 @@
     <div class="row" id="rowSleep"></div>
     <div class="row" id="rowFeed"></div>
     <div class="row" id="rowDiaper"></div>
+    <div class="row" id="rowBath"></div>
+    <div class="row" id="rowMedicine"></div>
   </div>
 
   <div class="panel">
@@ -443,7 +453,7 @@
   }
 
   // ---------- Rendering: rows ----------
-  function renderRows(){ renderSleepRow(); renderFeedRow(); renderDiaperRow(); }
+  function renderRows(){ renderSleepRow(); renderFeedRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); }
 
   function formTag(d){
     if (d.mode === 'edit') return '<span class="tag">edit</span>';
@@ -597,6 +607,8 @@
     if (d.type === 'Sleep') return renderSleepForm(d);
     if (d.type === 'Breastfeed') return renderFeedForm(d);
     if (d.type === 'Diaper') return renderDiaperForm(d);
+    if (d.type === 'Bath') return renderBathForm(d);
+    if (d.type === 'Medicine') return renderMedicineForm(d);
     return '';
   }
 
@@ -611,6 +623,115 @@
     el.innerHTML =
       '<div><div class="row-label">Diaper</div><div class="row-hint">Tap to log</div></div>' +
       '<button class="chip chip-ghost" data-action="open-new" data-type="Diaper">\uFF0B</button>';
+  }
+
+  function renderBathForm(d){
+    return (
+      '<div class="row-label">Bath' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+      '<div class="form-field"><div class="form-label">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode)
+    );
+  }
+
+  function renderBathRow(){
+    var el = document.getElementById('rowBath');
+    if (editing && editing.mode === 'new' && editing.type === 'Bath'){
+      el.className = 'row row-active row-active-sage';
+      el.innerHTML = renderBathForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.innerHTML =
+      '<div><div class="row-label">Bath</div><div class="row-hint">Tap to log</div></div>' +
+      '<button class="chip chip-ghost" data-action="open-new" data-type="Bath">\uFF0B</button>';
+  }
+
+  // ---------- Medicine ----------
+  function getCurrentMed(){ try { return JSON.parse(localStorage.getItem('jujube_current_med')) || null; } catch(e){ return null; } }
+  function setCurrentMed(m){ localStorage.setItem('jujube_current_med', JSON.stringify(m)); }
+
+  function getLastDose(){
+    var cache = getCache();
+    for (var i=0;i<cache.length;i++){
+      if (cache[i]['Type'] === 'Medical'){
+        return Number(cache[i]['Start Date/time (Epoch)']) || Date.parse(cache[i]['Start Date/time']);
+      }
+    }
+    return null;
+  }
+
+  function doseStatusText(med, lastDoseMs){
+    if (!lastDoseMs) return 'No doses logged yet';
+    var nextDue = lastDoseMs + med.intervalHours*3600000;
+    var diff = nextDue - Date.now();
+    if (diff <= 0) return 'Due now' + (Math.abs(diff) > 60000 ? ' \u00b7 overdue ' + formatDuration(Math.abs(diff)/1000) : '');
+    return 'Next dose in ' + formatDuration(diff/1000);
+  }
+
+  function renderMedConfigForm(d){
+    return (
+      '<div class="row-label">Medicine setup</div>' +
+      '<div class="form-field full"><div class="form-label">Medication</div><input type="text" class="note-input" placeholder="e.g. Tylenol" value="' + escapeHtml(d.name||'') + '" data-edit="name"></div>' +
+      '<div class="form-field"><div class="form-label">Every (hours)</div><input type="number" min="1" inputmode="numeric" class="note-input" value="' + d.intervalHours + '" data-edit="intervalHours"></div>' +
+      '<div class="form-actions"><span></span><div class="form-actions-right">' +
+        '<button class="link-btn" data-action="cancel-edit">Cancel</button>' +
+        '<button class="btn btn-fill" data-action="save-med-config">Save</button>' +
+      '</div></div>'
+    );
+  }
+
+  function renderMedicineForm(d){
+    var med = getCurrentMed();
+    var medName = (d.mode === 'edit') ? d.medName : (med ? med.name : '');
+    return (
+      '<div class="row-label">Medicine' + formTag(d) + '</div>' +
+      '<div class="row-hint" style="margin-bottom:8px">' + escapeHtml(medName || 'No medication set') + '</div>' +
+      '<div class="form-field"><div class="form-label">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode)
+    );
+  }
+
+  function renderMedicineRow(){
+    var el = document.getElementById('rowMedicine');
+    var med = getCurrentMed();
+
+    if (editing && editing.type === 'Medicine' && editing.mode === 'config'){
+      el.className = 'row row-active row-active-clay';
+      el.innerHTML = renderMedConfigForm(editing);
+      return;
+    }
+    if (editing && editing.mode === 'new' && editing.type === 'Medicine'){
+      el.className = 'row row-active row-active-clay';
+      el.innerHTML = renderMedicineForm(editing);
+      return;
+    }
+
+    el.className = 'row';
+    if (!med || !med.name){
+      el.innerHTML =
+        '<div><div class="row-label">Medicine</div><div class="row-hint">Set up a medication to track doses</div></div>' +
+        '<button class="link-btn" data-action="open-med-config">set up</button>';
+      return;
+    }
+
+    el.innerHTML =
+      '<div><div class="row-label">Medicine</div>' +
+        '<div class="row-hint">' + escapeHtml(med.name) + ', every ' + med.intervalHours + 'h</div>' +
+        '<div class="row-hint" id="doseStatusText">' + doseStatusText(med, getLastDose()) + '</div>' +
+      '</div>' +
+      '<div class="row-actions-col">' +
+        '<button class="chip chip-primary" data-action="open-new" data-type="Medicine">Log dose</button>' +
+        '<button class="link-btn" data-action="open-med-config">change</button>' +
+      '</div>';
+  }
+
+  function saveMedConfig(){
+    if (!editing || editing.mode !== 'config') return;
+    setCurrentMed({ name: editing.name || '', intervalHours: Number(editing.intervalHours) || 6 });
+    editing = null;
+    renderRows();
   }
 
   // ---------- Rendering: recent ----------
@@ -645,6 +766,11 @@
     } else if (type === 'Diaper'){
       dotClass = 'diaper'; text = 'Diaper';
       detail = e['[Diaper] Type'] || '';
+    } else if (type === 'Routine' && e['[Routine] Routine'] === 'Bath'){
+      dotClass = 'bath'; text = 'Bath';
+    } else if (type === 'Medical'){
+      dotClass = 'medicine'; text = 'Medicine';
+      detail = e['[Medical] Medication'] || '';
     }
     if (e['Note']) detail = detail ? detail + ' \u00b7 ' + e['Note'] : e['Note'];
 
@@ -664,12 +790,14 @@
   function summaryLine(dotClass, label, count, detail){
     return '<div class="summary-row"><div class="entry-main"><span class="dot ' + dotClass + '"></span>' +
       '<div><div class="entry-text">' + label + '<span class="tag">' + count + '</span></div>' +
-      '<div class="entry-detail">' + detail + '</div></div></div></div>';
+      (detail ? '<div class="entry-detail">' + detail + '</div>' : '') + '</div></div></div>';
   }
 
   function renderSummary(summary){
     var el = document.getElementById('summaryBody');
-    if (!summary || (summary.sleep.count===0 && summary.breastfeed.count===0 && summary.diaper.count===0)){
+    var bathCount = (summary && summary.bath) ? summary.bath.count : 0;
+    var medCount = (summary && summary.medical) ? summary.medical.count : 0;
+    if (!summary || (summary.sleep.count===0 && summary.breastfeed.count===0 && summary.diaper.count===0 && bathCount===0 && medCount===0)){
       el.innerHTML = '<div class="empty">Nothing logged in this window yet.</div>';
       return;
     }
@@ -678,6 +806,8 @@
     if (summary.breastfeed.count>0) rows.push(summaryLine('feed','Breastfeed', summary.breastfeed.count,
       formatDuration(summary.breastfeed.totalSeconds) + ' total \u00b7 L ' + formatDuration(summary.breastfeed.leftSeconds) + ' \u00b7 R ' + formatDuration(summary.breastfeed.rightSeconds)));
     if (summary.diaper.count>0) rows.push(summaryLine('diaper','Diaper', summary.diaper.count, summary.diaper.wet + ' wet \u00b7 ' + summary.diaper.dirty + ' dirty'));
+    if (bathCount>0) rows.push(summaryLine('bath','Bath', bathCount, ''));
+    if (medCount>0) rows.push(summaryLine('medicine','Medicine', medCount, ''));
     el.innerHTML = rows.join('');
   }
 
@@ -767,12 +897,17 @@
     } else if (type === 'Diaper'){
       editing.startMs = now;
       editing.diaperType = null; editing.color = null; editing.texture = null; editing.size = null;
+    } else if (type === 'Bath' || type === 'Medicine'){
+      editing.startMs = now;
     }
     renderRows();
   }
 
   function openEdit(entry){
-    var type = entry['Type'];
+    var rawType = entry['Type'];
+    var type = rawType;
+    if (rawType === 'Routine' && entry['[Routine] Routine'] === 'Bath') type = 'Bath';
+    else if (rawType === 'Medical') type = 'Medicine';
     var startMs = Number(entry['Start Date/time (Epoch)']) || Date.parse(entry['Start Date/time']);
     editing = { mode: 'edit', type: type, activityKey: entry['_activityKey'], note: entry['Note']||'', startMs: startMs };
     if (type === 'Sleep'){
@@ -787,6 +922,8 @@
       editing.color = entry['[Diaper] Dirty Color'] || null;
       editing.texture = entry['[Diaper] Dirty Texture'] || null;
       editing.size = entry['[Diaper] Detail'] || null;
+    } else if (type === 'Medicine'){
+      editing.medName = entry['[Medical] Medication'] || '';
     }
     renderRecent();
   }
@@ -817,6 +954,13 @@
       base["[Diaper] Dirty Color"] = d.color || "";
       base["[Diaper] Dirty Texture"] = d.texture || "";
       base["[Diaper] Detail"] = d.size || "";
+    } else if (d.type === 'Bath'){
+      base["Type"] = "Routine";
+      base["[Routine] Routine"] = "Bath";
+    } else if (d.type === 'Medicine'){
+      base["Type"] = "Medical";
+      var med = getCurrentMed();
+      base["[Medical] Medication"] = (d.mode === 'edit' ? d.medName : (med ? med.name : '')) || '';
     }
     return base;
   }
@@ -867,6 +1011,14 @@
     }
   }
 
+  function tickMed(){
+    if (editing && editing.type === 'Medicine') return;
+    var med = getCurrentMed();
+    if (!med || !med.name) return;
+    var el = document.getElementById('doseStatusText');
+    if (el) el.textContent = doseStatusText(med, getLastDose());
+  }
+
   // ---------- Event wiring ----------
   document.addEventListener('click', function(e){
     var groupChip = e.target.closest('[data-group]');
@@ -900,6 +1052,12 @@
     else if (action === 'switch-side') switchSide(btn.dataset.side);
     else if (action === 'stop-feed') stopFeed();
     else if (action === 'open-new') openNew(btn.dataset.type);
+    else if (action === 'open-med-config'){
+      var currentMed = getCurrentMed() || { name:'', intervalHours:6 };
+      editing = { mode:'config', type:'Medicine', name: currentMed.name, intervalHours: currentMed.intervalHours };
+      renderRows();
+    }
+    else if (action === 'save-med-config') saveMedConfig();
     else if (action === 'cancel-edit') cancelEdit();
     else if (action === 'save-entry') saveEntry();
     else if (action === 'delete-entry') deleteEntry();
@@ -937,7 +1095,7 @@
   document.addEventListener('change', onEditFieldChange);
   document.addEventListener('input', function(e){
     var field = e.target.dataset && e.target.dataset.edit;
-    if (field === 'note' || field === 'leftMin' || field === 'rightMin') onEditFieldChange(e);
+    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours') onEditFieldChange(e);
   });
 
   window.addEventListener('online', flushPending);
@@ -955,7 +1113,7 @@
   fetchSummary();
   updateSyncNote();
   flushPending();
-  setInterval(function(){ tickSleep(); tickFeed(); }, 1000);
+  setInterval(function(){ tickSleep(); tickFeed(); tickMed(); }, 1000);
 
 })();
 </script>
