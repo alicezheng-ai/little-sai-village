@@ -415,15 +415,22 @@
   }
 
   function renderSleepForm(d){
+    var isOngoing = d.ongoing === true;
     return (
       '<div class="form-card">' +
         '<div class="row-label" style="font-weight:600;">Sleep ' + formTag(d) + '</div>' +
-        '<div class="form-row-2col">' +
+        '<div class="form-group" style="margin-bottom:4px;">' +
+          '<label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:normal;">' +
+            '<input type="checkbox" ' + (isOngoing ? 'checked' : '') + ' data-action="toggle-sleep-ongoing"> ' +
+            'Sleep in progress (keep timer running)' +
+          '</label>' +
+        '</div>' +
+        '<div class="' + (isOngoing ? 'form-group' : 'form-row-2col') + '">' +
           '<div class="form-group"><label>Fell Asleep</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-          '<div class="form-group"><label>Woke Up</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
+          (!isOngoing ? '<div class="form-group"><label>Woke Up</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' : '') +
         '</div>' +
         '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
-        formActions(d.mode) +
+        formActions(d.mode, isOngoing ? 'Start Timer' : 'Save') +
       '</div>'
     );
   }
@@ -501,7 +508,7 @@
     );
   }
 
-  // ---------- Bottlefeed Section (Mapped to Backend Headers) ----------
+  // ---------- Bottlefeed Section ----------
   function renderBottleRow(){
     var el = document.getElementById('rowBottle');
     if (editing && editing.mode === 'new' && editing.type === 'Bottlefeed'){
@@ -786,9 +793,9 @@
   }
 
   // ---------- Timer actions ----------
-  function startSleep(){
+  function startSleep(customStartMs){
     var timers = getTimers();
-    timers.Sleep = { startedAt: Date.now() };
+    timers.Sleep = { startedAt: customStartMs || Date.now() };
     setTimers(timers);
     renderSleepRow();
   }
@@ -863,7 +870,7 @@
     var now = Date.now();
     editing = { mode: 'new', type: type, activityKey: null, note: '' };
     if (type === 'Sleep'){
-      editing.startMs = now - 15*60000; editing.endMs = now;
+      editing.startMs = now - 15*60000; editing.endMs = now; editing.ongoing = false;
     } else if (type === 'Breastfeed'){
       editing.startMs = now - 10*60000;
       editing.beginSide = 'LEFT'; editing.endSide = 'LEFT';
@@ -890,6 +897,7 @@
     editing = { mode: 'edit', type: type, activityKey: entry['_activityKey'], note: entry['Note']||'', startMs: startMs };
     if (type === 'Sleep'){
       editing.endMs = Number(entry['[Sleep] End Date/time (Epoch)']) || (startMs + (Number(entry['[Sleep] Duration (Seconds)'])||0)*1000);
+      editing.ongoing = false;
     } else if (type === 'Breastfeed'){
       editing.beginSide = entry['[Breastfeed] Begin Side'] || 'LEFT';
       editing.endSide = entry['[Breastfeed] End Side'] || editing.beginSide;
@@ -962,6 +970,12 @@
 
   function saveEntry(){
     if (!editing) return;
+    if (editing.type === 'Sleep' && editing.ongoing) {
+      var startMs = editing.startMs;
+      editing = null;
+      startSleep(startMs);
+      return;
+    }
     if (editing.type === 'Diaper' && !editing.diaperType) return;
     if (editing.type === 'Bottlefeed' && !editing.milkType) return;
     var payload = buildPayloadFromEditing(editing);
@@ -1064,6 +1078,15 @@
         removeCacheEntry(qkey);
         if (editing && editing.activityKey === qkey) editing = null;
         renderRecent(); renderRows(); fetchSummary();
+      }
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    if (e.target && e.target.dataset && e.target.dataset.action === 'toggle-sleep-ongoing') {
+      if (editing && editing.type === 'Sleep') {
+        editing.ongoing = e.target.checked;
+        renderRows();
       }
     }
   });
