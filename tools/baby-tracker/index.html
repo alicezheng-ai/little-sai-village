@@ -95,6 +95,16 @@
            pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
 
+  function formatTimeOnly(ms){
+    var d = new Date(ms);
+    var h = d.getHours();
+    var m = pad(d.getMinutes());
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    return h + ':' + m + ' ' + ampm;
+  }
+
   function toLocalInputValue(ms){
     var d = new Date(ms);
     return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -277,11 +287,14 @@
       el.className = 'row row-active';
       el.innerHTML =
         '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
-          '<div class="row-label">Sleep<span class="tag">running</span></div>' +
-          '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="sleep-start">' +
+          '<div class="row-label">Sleep <span style="font-weight:normal; font-size:0.8rem; opacity:0.8;">(running)</span></div>' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">' +
+            '<span>Started:</span>' +
+            '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="sleep-start">' +
+          '</div>' +
         '</div>' +
         '<div class="row-timer" id="sleepTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.startedAt)/1000) + '</div>' +
-        '<div class="row-active-actions"><button class="btn btn--primary" data-action="stop-sleep">Stop</button></div>';
+        '<div class="row-active-actions"><button class="btn btn--primary" data-action="stop-sleep">Wake Up</button></div>';
       return;
     }
 
@@ -294,7 +307,7 @@
     el.className = 'row';
     el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     el.innerHTML =
-      '<div><div class="row-label" style="font-weight:600;">Sleep</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to start timing</div></div>' +
+      '<div><div class="row-label" style="font-weight:600;">Sleep</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to start or adjust start time</div></div>' +
       '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
         '<button class="btn btn--primary" data-action="start-sleep">Start</button>' +
         '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Sleep">log manually</button>' +
@@ -305,8 +318,8 @@
     return (
       '<div class="row-label" style="font-weight:600;">Sleep' + formTag(d) + '</div>' +
       '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
-        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">End</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Fell Asleep</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Woke Up</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
       '</div>' +
       '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
       formActions(d.mode)
@@ -329,8 +342,11 @@
       el.className = 'row row-active';
       el.innerHTML =
         '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
-          '<div class="row-label">Breastfeed<span class="tag">' + t.currentSide.toLowerCase() + '</span></div>' +
-          '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="feed-start">' +
+          '<div class="row-label">Breastfeed <span style="font-size:0.8rem; font-weight:normal;">(' + t.currentSide.toLowerCase() + ')</span></div>' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">' +
+            '<span>Started:</span>' +
+            '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="feed-start">' +
+          '</div>' +
         '</div>' +
         '<div class="row-timer" id="feedTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.currentSideStart)/1000) + '</div>' +
         '<div class="row-sub" id="feedSubText" style="font-size:0.85rem; opacity:0.8; margin-bottom:8px;">' + feedSubLabel(t) + '</div>' +
@@ -554,10 +570,14 @@
     var type = e['Type'];
     var text = type, detail = '';
     var startMs = Number(e['Start Date/time (Epoch)']) || Date.parse(e['Start Date/time']);
+    var displayTimeMs = startMs;
 
     if (type === 'Sleep'){
       text = 'Sleep';
-      detail = formatDuration(Number(e['[Sleep] Duration (Seconds)'])||0);
+      var dur = Number(e['[Sleep] Duration (Seconds)'])||0;
+      var endMs = Number(e['[Sleep] End Date/time (Epoch)']) || (startMs + dur*1000);
+      displayTimeMs = endMs; // Display relative time based on wake-up time
+      detail = 'Woke up at ' + formatTimeOnly(endMs) + ' (' + formatDuration(dur) + ')';
     } else if (type === 'Breastfeed'){
       text = 'Breastfeed';
       var l = Number(e['[Breastfeed] Left Duration (Seconds)'])||0;
@@ -583,7 +603,7 @@
       (detail ? '<div class="entry-detail" style="font-size:0.85rem; opacity:0.7;">' + escapeHtml(detail) + '</div>' : '') +
       '</div></div>' +
       '<div class="entry-right" style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">' +
-        '<div class="entry-time" style="font-size:0.8rem; opacity:0.8;">' + formatRelative(startMs) + '</div>' +
+        '<div class="entry-time" style="font-size:0.8rem; opacity:0.8;">' + formatRelative(displayTimeMs) + '</div>' +
         '<button class="btn" style="font-size:0.75rem; color:var(--coral, #c97a52); border:none; background:none; padding:0;" data-action="quick-delete" data-key="' + key + '">delete</button>' +
       '</div>' +
     '</div>';
@@ -605,7 +625,7 @@
       return;
     }
     var rows = [];
-    if (summary.sleep.count>0) rows.push(summaryLine('Sleep', summary.sleep.count, formatDuration(summary.sleep.totalSeconds) + ' total'));
+    if (summary.sleep.count>0) rows.push(summaryLine('Sleep', summary.sleep.count, formatDuration(summary.sleep.totalSeconds) + ' total sleep'));
     if (summary.breastfeed.count>0) rows.push(summaryLine('Breastfeed', summary.breastfeed.count,
       formatDuration(summary.breastfeed.totalSeconds) + ' total \u00b7 L ' + formatDuration(summary.breastfeed.leftSeconds) + ' \u00b7 R ' + formatDuration(summary.breastfeed.rightSeconds)));
     if (summary.diaper.count>0) rows.push(summaryLine('Diaper', summary.diaper.count, summary.diaper.wet + ' wet \u00b7 ' + summary.diaper.dirty + ' dirty'));
