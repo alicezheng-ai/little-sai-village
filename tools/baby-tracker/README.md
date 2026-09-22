@@ -1,67 +1,49 @@
-# Jujube Log
+# Baby is Figureoutable 👶🏼✨
 
-A home-screen web app for logging Sleep, Breastfeed, Diaper, Bath, and Medicine,
-built to replace Nara Baby before it starts charging. Data is written in Nara's own
-column format, so
-[understand-infant-sleep](https://github.com/alicezheng-ai/understand-infant-sleep)
-keeps working against it unchanged.
+A mobile-friendly web tool built around the belief that parenting and baby routines are always **figureoutable**. Designed for seamless daily logging and shift handoffs—giving parents, nannies, and caregivers an instant, organized picture of Jujube's day without friction or subscription paywalls.
 
-**Live app:** https://alicezheng-ai.github.io/baby-is-figureoutable/
-(open it in Safari, then Share → Add to Home Screen)
+Originally created to replace Nara Baby, all data writes directly to Google Sheets using Nara's standard column export format (making it fully compatible with downstream analysis tools like `understand-infant-sleep`).
 
-## What's here
+**Live App Link:** [little-sai-village/tools/baby-tracker/](https://alicezheng-ai.github.io/little-sai-village/tools/baby-tracker/)  
+*(Open in Mobile Safari → Share → **Add to Home Screen** for a native app feel)*
 
-- Live start/stop timers for **Sleep** and **Breastfeed** (with one-tap side
-  switching), one-tap-start **Diaper** logging with Type / Color / Texture / Size
-- Every row stays visible and usable while a timer runs elsewhere — nothing takes
-  over the screen
-- A date/time picker on every timer and on Diaper, for backfilling when the actual
-  start was earlier than when you opened the app
-- "Log manually" on Sleep and Breastfeed, for entries logged with no live timer at
-  all (phone wasn't on hand)
-- Stopping a Sleep or Breastfeed timer opens a quick review step — add a note if you
-  want one, then Save; nothing saves silently
-- Every entry in Recent has its own delete link; double-tap an entry to open it and
-  see or edit its note and details
-- Breastfeed shows which side was used last, so it's easy to rotate
-- Today / Last 24h rollup totals, rounded to the minute
-- Offline-safe: saves queue locally and retry on their own
-- Installs to the home screen; light/dark follows the phone's system setting
-- Styled around the watercolor piece of Sai by the lake — same warm ivory paper and
-  soft palette throughout, light or dark
-- Bath as a one-tap timestamped log, same shape as Diaper
-- Medicine: set a current medication and dosing interval once, then log each dose
-  in one tap — the row shows time since the last dose and a live countdown to the
-  next one, right on the home screen
+---
 
-## Roadmap
+## 🌟 Why "Baby is Figureoutable"?
 
-- [x] **Day 1 — Core logging**, expanded with editing, notes, backfill, and a
-  Today/24h summary per the workflow details above.
-- [x] **Day 2 — Bath and Medicine**, as described above.
-- [ ] **Day 3 — Action screen v1.** Rule-based "what's likely going on" reading —
-  elapsed time since the last event, compared against Sai's own recent averages.
-- [ ] **Day 4 — Sleep-trend flag.** A longer-horizon, week-over-week check for
-  things like reduced sleep, with AAP age-bracket context layered in.
+When multiple caregivers or nannies take over shifts throughout the day and night, clear continuity is everything. This tool gives incoming caregivers an immediate, clear snapshot of:
+* When he last slept, fed, or had a diaper change.
+* Which side was used last for breastfeeds.
+* Medication countdowns and dosage intervals.
+* Today vs. Last 24-hour summary totals.
 
-CSV export isn't a separate line item — the Google Sheet behind this app already uses
-Nara's exact header row, so `File > Download > CSV` on it is already a Nara-format
-export, any time.
+---
 
-**Later, not on this sprint:** merging in the Digital Twin model and folding
-`understand-infant-sleep` in as a view rather than a separate tool; multi-caregiver
-support, once family is around to use it in January.
+## ✨ Features & Capabilities
 
-## Setup / updating
+* **Live & Flexible Timers:**
+  * One-tap start/stop for **Sleep** and **Breastfeed** with live elapsed timers.
+  * Easy **one-tap side switching** (Left / Right) during feeding.
+  * Shows which side was used last to keep rotations seamless across caregiver shifts.
+* **Smart Backfilling & Manual Logging:**
+  * Built-in date/time picker on every timer to backfill start times if the phone wasn't nearby when an activity began.
+  * "Log manually" options for retroactive logging.
+* **Shift-Friendly & Non-Intrusive UI:**
+  * Timers run unobtrusively in the background—every other row stays interactive while a timer is running.
+  * Stopping a timer opens a review screen to add optional notes before saving (nothing saves silently).
+  * Double-tap any entry in the **Recent** list to inspect or edit details; single-tap delete link for quick fixes.
+* **Diaper, Bath & Medication Tracking:**
+  * Fast diaper logging with support for Type (*Wet / Dirty / Dirty Wet*), Color, Texture, and Size.
+  * One-tap timestamped Bath logging.
+  * **Medicine Tracker:** Set a medication name and interval hours once. Log doses in one tap—the home screen displays exact time elapsed since the last dose and a live countdown to the next due dose.
+* **Summaries & Offline Resilience:**
+  * Interactive **Today** and **Last 24h** rollups showing total sleep duration, feed times per side, and diaper counts.
+  * **Offline-Safe:** Queues log entries locally if offline and syncs automatically when connection restores.
+  * Styled with warm watercolor ivory tones and auto-adapts to system Dark/Light mode.
 
-1. **Backend:** Google Sheet → Extensions → Apps Script → paste in `apps-script/Code.gs`.
-   First time: Deploy → New deployment → Web app (Execute as Me, access Anyone),
-   copy the URL into `CONFIG.APPS_SCRIPT_URL` in `index.html`. Any time `Code.gs`
-   changes after that: Deploy → Manage deployments → edit → **New version** — saving
-   alone doesn't push changes live.
-2. **Front end:** this repo, with Pages turned on (Settings → Pages → main branch,
-   root).
-3. **Home screen:** open the live link in Safari → Share → Add to Home Screen.
+---
 
-Data lives in the `Log` tab of the Google Sheet — one row per entry, headers matching
-the Nara export, editable there directly if ever needed.
+## 🏗️ Technical Setup & Integration
+
+### Repository Structure
+This tool lives inside the main **[little-sai-village](https://github.com/alicezheng-ai/little-sai-village)** repository under:
