@@ -14,6 +14,48 @@
      tokens (colors, radius, fonts) from css/style.css, adds only the
      pieces that page doesn't already have a component for. */
 
+  .jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding: 0 24px 10px;
+    max-width: 960px;
+    margin: 0 auto 8px;
+    font-size: 0.9rem;
+  }
+  .jump a { color: var(--rose-deep); text-decoration: none; font-weight: 600; }
+  .jump a:hover { text-decoration: underline; }
+  .jump .sep { color: var(--line); }
+
+  .stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    background: var(--card);
+    border-radius: var(--radius-organic);
+    padding: 14px 26px;
+    box-shadow: 0 18px 34px -22px rgba(43, 33, 28, 0.35);
+    margin: 4px 0 16px;
+  }
+  .stat .num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.2rem;
+    color: var(--rose-deep);
+    line-height: 1;
+  }
+  .stat .label { color: var(--ink-soft); font-size: 0.9rem; max-width: 15em; }
+
+  .callout {
+    background: var(--gold-soft);
+    color: var(--ink);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 0.92rem;
+    margin: 12px 0;
+  }
+  .callout strong { color: var(--rose-deep); }
+
   .photo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -79,8 +121,6 @@
   #taskStatus { font-size: 0.82rem; color: var(--pine-deep); min-height: 1.2em; }
   #resetTasks { background: none; border: none; color: var(--rose-deep); font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 4px 0; }
   #resetTasks:hover { text-decoration: underline; }
-
-  .device-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: -6px; }
 </style>
 </head>
 <body>
@@ -113,7 +153,6 @@
   <a href="#feeding">Feeding</a> <span class="sep">&middot;</span>
   <a href="#diapers">Diapers</a> <span class="sep">&middot;</span>
   <a href="#sleep">Sleep</a> <span class="sep">&middot;</span>
-  <a href="#tips">Tips</a> <span class="sep">&middot;</span>
   <a href="#tasks">Tasks</a> <span class="sep">&middot;</span>
   <a href="#log">Log</a>
 </nav>
@@ -148,7 +187,10 @@
       <span class="num">60–90</span>
       <span class="label">minutes awake before he's ready to wind down, at his current age</span>
     </div>
-    <p>Track how long it's been since his last nap ended, and start the wind-down routine as he approaches that range. Catching the window matters more than the clock — an overtired baby fights sleep harder.</p>
+    <div id="wakeWindowNote">
+      <p>Track how long it's been since his last nap ended, and start the wind-down routine as he approaches that range. Catching the window matters more than the clock — an overtired baby fights sleep harder.</p>
+      <p>If a nap runs shorter than 30 minutes, treat the next wake window as shorter too — maybe under 60 minutes.</p>
+    </div>
   </div>
 </section>
 
@@ -191,17 +233,9 @@
 <section class="band band--deep" id="sleep">
   <div class="wrap">
     <div class="section-head"><h2>Sleep &amp; swaddle</h2></div>
-    <div class="card">
+    <div class="card" id="sleepNotes">
       <p>Baby Sai sleeps in a Love to Dream transition swaddle. For the first nap of the day, leave one arm out; for the second nap, leave the other arm out.</p>
       <p>If he's fighting sleep, pick him up and bounce gently on the yoga ball. Turn the sound machine to its second setting — the combination usually settles him.</p>
-    </div>
-  </div>
-</section>
-
-<section class="band" id="tips">
-  <div class="wrap">
-    <div class="section-head"><h2>Other tips</h2></div>
-    <div class="card">
       <p>Baby Sai is a contact napper. If a nap runs short — 10 to 20 minutes — consider holding him through it instead of waiting him out. One full sleep cycle is close to 40–45 minutes.</p>
     </div>
   </div>
@@ -216,7 +250,7 @@
 
     <div class="card">
       <h3 style="display:flex; align-items:center; justify-content:space-between;">
-        Routine tasks 
+        Routine tasks
         <button type="button" id="resetTasks">Reset for new shift</button>
       </h3>
       <ul class="checklist" id="routineList">
@@ -236,10 +270,10 @@
       </ul>
 
       <h3>Additional tasks</h3>
-      <textarea id="todaysTasks" placeholder="Loading tasks from Google Doc..."></textarea>
+      <textarea id="todaysTasks" placeholder="Loading tasks from Google Doc…"></textarea>
       <div class="task-footer">
-        <span id="taskStatus" role="status">Synced with Google Doc</span>
-        <button type="button" class="btn btn--pine" id="saveTasks">Save & Sync Tasks</button>
+        <span id="taskStatus" role="status">Loading…</span>
+        <button type="button" class="btn btn--pine" id="saveTasks">Save &amp; sync tasks</button>
       </div>
     </div>
   </div>
@@ -268,50 +302,60 @@
       var li = cb.closest('li');
       if (li) li.classList.toggle('done', cb.checked);
     }
-
     var boxes = document.querySelectorAll('#routineList input[type="checkbox"]');
-    var todaysTasks = document.getElementById('todaysTasks');
-    var taskStatus = document.getElementById('taskStatus');
-
     boxes.forEach(function (cb) {
       syncDone(cb);
       cb.addEventListener('change', function () { syncDone(cb); });
     });
-
     document.getElementById('resetTasks').addEventListener('click', function () {
       boxes.forEach(function (cb) { cb.checked = false; syncDone(cb); });
     });
 
-    // Fetch tasks from Google Doc on page load
-    async function fetchTasks() {
-      taskStatus.textContent = 'Fetching tasks from Google Doc...';
+    // Rewrites a container's paragraphs from Doc text — only called when
+    // that section actually came back from the fetch, so the static
+    // fallback copy already in the HTML survives if the Doc or the
+    // section key isn't there yet.
+    function renderParagraphs(container, text) {
+      if (!container || !text) return;
+      var lines = text.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      if (!lines.length) return;
+      container.innerHTML = lines.map(function (l) { return '<p>' + l + '</p>'; }).join('');
+    }
+
+    var todaysTasks = document.getElementById('todaysTasks');
+    var taskStatus = document.getElementById('taskStatus');
+
+    // One fetch, one Doc — populates every doc-driven section on the page.
+    async function loadContent() {
+      taskStatus.textContent = 'Loading…';
       try {
         const res = await fetch(APPS_SCRIPT_URL);
-        const data = await res.json();
-        todaysTasks.value = data.text || '';
+        const sections = await res.json();
+        if (sections.TASKS !== undefined) todaysTasks.value = sections.TASKS;
+        renderParagraphs(document.getElementById('wakeWindowNote'), sections.WAKE_WINDOW_NOTE);
+        renderParagraphs(document.getElementById('sleepNotes'), sections.SLEEP_NOTES);
         taskStatus.textContent = 'Synced with Google Doc';
       } catch (err) {
-        taskStatus.textContent = 'Unable to fetch tasks from Google Doc';
+        taskStatus.textContent = "Couldn't reach the Google Doc — showing the saved copy.";
       }
     }
 
-    // Save tasks to Google Doc
     document.getElementById('saveTasks').addEventListener('click', async function () {
-      taskStatus.textContent = 'Saving to Google Doc...';
+      taskStatus.textContent = 'Saving…';
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: todaysTasks.value })
+          body: JSON.stringify({ section: 'TASKS', text: todaysTasks.value })
         });
-        taskStatus.textContent = 'Saved to Google Doc!';
+        taskStatus.textContent = 'Saved';
       } catch (err) {
-        taskStatus.textContent = 'Error saving tasks';
+        taskStatus.textContent = "Couldn't save just now — try again.";
       }
     });
 
-    fetchTasks();
+    loadContent();
   })();
 </script>
 
