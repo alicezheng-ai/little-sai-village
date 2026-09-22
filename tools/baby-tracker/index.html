@@ -19,6 +19,105 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../css/style.css">
 
+<style>
+  /* Form Layout Polish & Safety Overflow Guards */
+  .row-active {
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 14px;
+    padding: 16px !important;
+    margin: 8px 0;
+    box-shadow: inset 0 0 0 1px var(--paper-line, #e3d9c4);
+  }
+
+  .form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-soft, #6b5e52);
+  }
+
+  .form-control {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid var(--paper-line, #d4c8b3);
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--paper-line, #d4c8b3);
+    background: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .chip-btn.active {
+    background: var(--rose-deep, #a35252);
+    color: #fff;
+    border-color: var(--rose-deep, #a35252);
+  }
+
+  .tag-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    border-radius: 12px;
+    background: var(--gold-soft, #f2e3c6);
+    color: var(--ink, #332a24);
+    font-weight: normal;
+    text-transform: lowercase;
+  }
+
+  .actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .actions-right {
+    display: flex;
+    gap: 8px;
+  }
+</style>
+
 </head>
 <body>
 
@@ -44,6 +143,7 @@
   <div class="card" id="panelActions" style="margin-bottom: 24px;">
     <div class="row" id="rowSleep"></div>
     <div class="row" id="rowFeed"></div>
+    <div class="row" id="rowBottle"></div>
     <div class="row" id="rowDiaper"></div>
     <div class="row" id="rowBath"></div>
     <div class="row" id="rowMedicine"></div>
@@ -261,18 +361,18 @@
   }
 
   // ---------- Rendering: rows ----------
-  function renderRows(){ renderSleepRow(); renderFeedRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); }
+  function renderRows(){ renderSleepRow(); renderFeedRow(); renderBottleRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); }
 
   function formTag(d){
-    if (d.mode === 'edit') return '<span class="tag">edit</span>';
-    if (d.reviewing) return '<span class="tag">save</span>';
-    return '<span class="tag">manual</span>';
+    if (d.mode === 'edit') return '<span class="tag-badge">edit</span>';
+    if (d.reviewing) return '<span class="tag-badge">save</span>';
+    return '<span class="tag-badge">manual</span>';
   }
 
   function formActions(mode, saveLabel, saveDisabled){
-    return '<div class="form-actions" style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">' +
+    return '<div class="actions-bar">' +
       (mode === 'edit' ? '<button class="btn btn--danger" data-action="delete-entry">Delete</button>' : '<span></span>') +
-      '<div class="form-actions-right" style="display:flex; gap:8px;">' +
+      '<div class="actions-right">' +
         '<button class="btn" data-action="cancel-edit">Cancel</button>' +
         '<button class="btn btn--primary" data-action="save-entry"' + (saveDisabled ? ' disabled' : '') + '>' + (saveLabel||'Save') + '</button>' +
       '</div>' +
@@ -287,7 +387,7 @@
       el.className = 'row row-active';
       el.innerHTML =
         '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
-          '<div class="row-label">Sleep <span style="font-weight:normal; font-size:0.8rem; opacity:0.8;">(running)</span></div>' +
+          '<div class="row-label" style="font-weight:600;">Sleep <span class="tag-badge">running</span></div>' +
           '<div style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">' +
             '<span>Started:</span>' +
             '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="sleep-start">' +
@@ -316,13 +416,15 @@
 
   function renderSleepForm(d){
     return (
-      '<div class="row-label" style="font-weight:600;">Sleep' + formTag(d) + '</div>' +
-      '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
-        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Fell Asleep</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Woke Up</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
-      '</div>' +
-      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
-      formActions(d.mode)
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Sleep ' + formTag(d) + '</div>' +
+        '<div class="form-row-2col">' +
+          '<div class="form-group"><label>Fell Asleep</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+          '<div class="form-group"><label>Woke Up</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode) +
+      '</div>'
     );
   }
 
@@ -342,7 +444,7 @@
       el.className = 'row row-active';
       el.innerHTML =
         '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
-          '<div class="row-label">Breastfeed <span style="font-size:0.8rem; font-weight:normal;">(' + t.currentSide.toLowerCase() + ')</span></div>' +
+          '<div class="row-label" style="font-weight:600;">Breastfeed <span class="tag-badge">' + t.currentSide.toLowerCase() + '</span></div>' +
           '<div style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">' +
             '<span>Started:</span>' +
             '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="feed-start">' +
@@ -379,49 +481,85 @@
 
   function sideChip(field, value, d, label){
     var selected = d[field] === value;
-    return '<button class="btn' + (selected?' btn--primary':'') + '" data-side-field="' + field + '" data-side-value="' + value + '">' + label + '</button>';
+    return '<button class="chip-btn' + (selected?' active':'') + '" data-side-field="' + field + '" data-side-value="' + value + '">' + label + '</button>';
   }
 
   function renderFeedForm(d){
     return (
-      '<div class="row-label" style="font-weight:600;">Breastfeed' + formTag(d) + '</div>' +
-      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">Began on</div><div class="chip-row" style="display:flex; gap:6px;">' + sideChip('beginSide','LEFT',d,'Left') + sideChip('beginSide','RIGHT',d,'Right') + '</div></div>' +
-      '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">Ended on</div><div class="chip-row" style="display:flex; gap:6px;">' + sideChip('endSide','LEFT',d,'Left') + sideChip('endSide','RIGHT',d,'Right') + '</div></div>' +
-      '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
-        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Left (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.leftMin + '" data-edit="leftMin"></div>' +
-        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Right (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.rightMin + '" data-edit="rightMin"></div>' +
-      '</div>' +
-      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
-      formActions(d.mode)
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Breastfeed ' + formTag(d) + '</div>' +
+        '<div class="form-group"><label>Start Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-group"><label>Began On</label><div class="chip-group">' + sideChip('beginSide','LEFT',d,'Left') + sideChip('beginSide','RIGHT',d,'Right') + '</div></div>' +
+        '<div class="form-group"><label>Ended On</label><div class="chip-group">' + sideChip('endSide','LEFT',d,'Left') + sideChip('endSide','RIGHT',d,'Right') + '</div></div>' +
+        '<div class="form-row-2col">' +
+          '<div class="form-group"><label>Left (min)</label><input type="number" min="0" inputmode="numeric" class="form-control" value="' + d.leftMin + '" data-edit="leftMin"></div>' +
+          '<div class="form-group"><label>Right (min)</label><input type="number" min="0" inputmode="numeric" class="form-control" value="' + d.rightMin + '" data-edit="rightMin"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode) +
+      '</div>'
+    );
+  }
+
+  // ---------- Bottlefeed Section (Mapped to Backend Headers) ----------
+  function renderBottleRow(){
+    var el = document.getElementById('rowBottle');
+    if (editing && editing.mode === 'new' && editing.type === 'Bottlefeed'){
+      el.className = 'row row-active';
+      el.innerHTML = renderBottleForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Bottlefeed</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Breast milk or Formula</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="Bottlefeed">\uFF0B Log</button>';
+  }
+
+  function renderBottleForm(d){
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Bottlefeed ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        attrGroup('Milk Type','milkType',['Breast Milk','Formula'], d) +
+        '<div class="form-row-2col">' +
+          '<div class="form-group"><label>Amount (oz)</label><input type="number" step="0.5" min="0" inputmode="decimal" class="form-control" value="' + (d.amountOz||'') + '" data-edit="amountOz"></div>' +
+          '<div class="form-group"><label>Amount (ml)</label><input type="number" step="5" min="0" inputmode="numeric" class="form-control" value="' + (d.amountMl||'') + '" data-edit="amountMl"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, 'Log', !d.milkType) +
+      '</div>'
     );
   }
 
   function attrGroup(title, group, options, d){
-    return '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">' + title + '</div><div class="chip-row" style="display:flex; flex-wrap:wrap; gap:6px;">' +
+    return '<div class="form-group"><label>' + title + '</label><div class="chip-group">' +
       options.map(function(opt){
         var selected = d[group] === opt;
-        return '<button class="btn' + (selected?' btn--primary':'') + '" data-group="' + group + '" data-value="' + opt + '">' + opt + '</button>';
+        return '<button class="chip-btn' + (selected?' active':'') + '" data-group="' + group + '" data-value="' + opt + '">' + opt + '</button>';
       }).join('') +
     '</div></div>';
   }
 
   function renderDiaperForm(d){
     return (
-      '<div class="row-label" style="font-weight:600;">Diaper' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
-      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      attrGroup('Type','diaperType',['Wet','Dirty','Dirty Wet'], d) +
-      attrGroup('Color','color',['Yellow','Green','Brown','Black','Red'], d) +
-      attrGroup('Texture','texture',['Seedy','Mushy','Runny','Watery','Hard'], d) +
-      attrGroup('Size','size',['Small','Medium','Large'], d) +
-      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
-      formActions(d.mode, 'Log', !d.diaperType)
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Diaper ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        attrGroup('Type','diaperType',['Wet','Dirty','Dirty Wet'], d) +
+        attrGroup('Color','color',['Yellow','Green','Brown','Black','Red'], d) +
+        attrGroup('Texture','texture',['Seedy','Mushy','Runny','Watery','Hard'], d) +
+        attrGroup('Size','size',['Small','Medium','Large'], d) +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, 'Log', !d.diaperType) +
+      '</div>'
     );
   }
 
   function renderEntryForm(d){
     if (d.type === 'Sleep') return renderSleepForm(d);
     if (d.type === 'Breastfeed') return renderFeedForm(d);
+    if (d.type === 'Bottlefeed') return renderBottleForm(d);
     if (d.type === 'Diaper') return renderDiaperForm(d);
     if (d.type === 'Bath') return renderBathForm(d);
     if (d.type === 'Medicine') return renderMedicineForm(d);
@@ -444,10 +582,12 @@
 
   function renderBathForm(d){
     return (
-      '<div class="row-label" style="font-weight:600;">Bath' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
-      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
-      formActions(d.mode)
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Bath ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode) +
+      '</div>'
     );
   }
 
@@ -489,12 +629,16 @@
 
   function renderMedConfigForm(d){
     return (
-      '<div class="row-label" style="font-weight:600;">Medicine setup</div>' +
-      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Medication</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="e.g. Tylenol" value="' + escapeHtml(d.name||'') + '" data-edit="name"></div>' +
-      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Every (hours)</div><input type="number" min="1" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.intervalHours + '" data-edit="intervalHours"></div>' +
-      '<div class="form-actions" style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">' +
-        '<button class="btn" data-action="cancel-edit">Cancel</button>' +
-        '<button class="btn btn--primary" data-action="save-med-config">Save</button>' +
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Medicine Setup</div>' +
+        '<div class="form-group"><label>Medication</label><input type="text" class="form-control" placeholder="e.g. Tylenol" value="' + escapeHtml(d.name||'') + '" data-edit="name"></div>' +
+        '<div class="form-group"><label>Every (hours)</label><input type="number" min="1" inputmode="numeric" class="form-control" value="' + d.intervalHours + '" data-edit="intervalHours"></div>' +
+        '<div class="actions-bar" style="justify-content:flex-end;">' +
+          '<div class="actions-right">' +
+            '<button class="btn" data-action="cancel-edit">Cancel</button>' +
+            '<button class="btn btn--primary" data-action="save-med-config">Save</button>' +
+          '</div>' +
+        '</div>' +
       '</div>'
     );
   }
@@ -503,11 +647,13 @@
     var med = getCurrentMed();
     var medName = (d.mode === 'edit') ? d.medName : (med ? med.name : '');
     return (
-      '<div class="row-label" style="font-weight:600;">Medicine' + formTag(d) + '</div>' +
-      '<div class="row-hint" style="margin-bottom:8px; font-size:0.85rem; opacity:0.8;">' + escapeHtml(medName || 'No medication set') + '</div>' +
-      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
-      formActions(d.mode)
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Medicine ' + formTag(d) + '</div>' +
+        '<div class="row-hint" style="font-size:0.85rem; opacity:0.8;">' + escapeHtml(medName || 'No medication set') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode) +
+      '</div>'
     );
   }
 
@@ -576,7 +722,7 @@
       text = 'Sleep';
       var dur = Number(e['[Sleep] Duration (Seconds)'])||0;
       var endMs = Number(e['[Sleep] End Date/time (Epoch)']) || (startMs + dur*1000);
-      displayTimeMs = endMs; // Display relative time based on wake-up time
+      displayTimeMs = endMs;
       detail = 'Woke up at ' + formatTimeOnly(endMs) + ' (' + formatDuration(dur) + ')';
     } else if (type === 'Breastfeed'){
       text = 'Breastfeed';
@@ -586,6 +732,11 @@
       if (l) parts.push('L ' + formatDuration(l));
       if (r) parts.push('R ' + formatDuration(r));
       detail = parts.join(' \u00b7 ');
+    } else if (type === 'Bottlefeed' || type === 'Formula' || type === 'Bottle' || type === 'Bottle Feed'){
+      text = 'Bottlefeed';
+      var mType = e['[Bottle Feed] Type'] || e['[Bottle] Milk Type'] || 'Milk';
+      var oz = e['[Bottle Feed] Volume'] || e['[Bottle] Amount (oz)'];
+      detail = mType + (oz ? ' \u00b7 ' + oz + ' oz' : '');
     } else if (type === 'Diaper'){
       text = 'Diaper';
       detail = e['[Diaper] Type'] || '';
@@ -717,6 +868,9 @@
       editing.startMs = now - 10*60000;
       editing.beginSide = 'LEFT'; editing.endSide = 'LEFT';
       editing.leftMin = 10; editing.rightMin = 0;
+    } else if (type === 'Bottlefeed'){
+      editing.startMs = now;
+      editing.milkType = 'Breast Milk'; editing.amountOz = ''; editing.amountMl = '';
     } else if (type === 'Diaper'){
       editing.startMs = now;
       editing.diaperType = null; editing.color = null; editing.texture = null; editing.size = null;
@@ -731,6 +885,7 @@
     var type = rawType;
     if (rawType === 'Routine' && entry['[Routine] Routine'] === 'Bath') type = 'Bath';
     else if (rawType === 'Medical') type = 'Medicine';
+    else if (rawType === 'Bottlefeed' || rawType === 'Formula' || rawType === 'Bottle' || rawType === 'Bottle Feed') type = 'Bottlefeed';
     var startMs = Number(entry['Start Date/time (Epoch)']) || Date.parse(entry['Start Date/time']);
     editing = { mode: 'edit', type: type, activityKey: entry['_activityKey'], note: entry['Note']||'', startMs: startMs };
     if (type === 'Sleep'){
@@ -740,6 +895,10 @@
       editing.endSide = entry['[Breastfeed] End Side'] || editing.beginSide;
       editing.leftMin = Math.round((Number(entry['[Breastfeed] Left Duration (Seconds)'])||0)/60);
       editing.rightMin = Math.round((Number(entry['[Breastfeed] Right Duration (Seconds)'])||0)/60);
+    } else if (type === 'Bottlefeed'){
+      editing.milkType = entry['[Bottle Feed] Type'] || 'Breast Milk';
+      editing.amountOz = entry['[Bottle Feed] Volume'] || '';
+      if (editing.amountOz !== '') editing.amountMl = Math.round(parseFloat(editing.amountOz) * 29.5735);
     } else if (type === 'Diaper'){
       editing.diaperType = entry['[Diaper] Type'] || null;
       editing.color = entry['[Diaper] Dirty Color'] || null;
@@ -756,6 +915,7 @@
     renderRows(); renderRecent();
   }
 
+  // Maps strictly to existing backend Nara headers
   function buildPayloadFromEditing(d){
     var base = {
       "Type": d.type, "Profile Name": CONFIG.PROFILE_NAME,
@@ -772,6 +932,18 @@
       base["[Breastfeed] End Side"] = d.endSide;
       base["[Breastfeed] Left Duration (Seconds)"] = Math.max(0, Math.round((Number(d.leftMin)||0)*60));
       base["[Breastfeed] Right Duration (Seconds)"] = Math.max(0, Math.round((Number(d.rightMin)||0)*60));
+    } else if (d.type === 'Bottlefeed'){
+      base["Type"] = "Bottle Feed";
+      base["[Bottle Feed] Type"] = d.milkType || "Breast Milk";
+      base["[Bottle Feed] Volume"] = d.amountOz || "";
+      base["[Bottle Feed] Volume Unit"] = "oz";
+      if (d.milkType === 'Formula') {
+        base["[Bottle Feed] Formula Volume"] = d.amountOz || "";
+        base["[Bottle Feed] Formula Volume Unit"] = "oz";
+      } else {
+        base["[Bottle Feed] Breast Milk Volume"] = d.amountOz || "";
+        base["[Bottle Feed] Breast Milk Volume Unit"] = "oz";
+      }
     } else if (d.type === 'Diaper'){
       base["[Diaper] Type"] = d.diaperType;
       base["[Diaper] Dirty Color"] = d.color || "";
@@ -791,6 +963,7 @@
   function saveEntry(){
     if (!editing) return;
     if (editing.type === 'Diaper' && !editing.diaperType) return;
+    if (editing.type === 'Bottlefeed' && !editing.milkType) return;
     var payload = buildPayloadFromEditing(editing);
     if (editing.mode === 'edit'){
       payload['_op'] = 'update';
@@ -907,8 +1080,19 @@
   function onEditFieldChange(e){
     var field = e.target.dataset && e.target.dataset.edit;
     if (field && editing){
-      if (field === 'startMs' || field === 'endMs') editing[field] = fromLocalInputValue(e.target.value);
-      else editing[field] = e.target.value;
+      if (field === 'startMs' || field === 'endMs') {
+        editing[field] = fromLocalInputValue(e.target.value);
+      } else if (field === 'amountOz') {
+        editing.amountOz = e.target.value;
+        if (e.target.value !== '') editing.amountMl = Math.round(parseFloat(e.target.value) * 29.5735);
+        if (editing.type === 'Bottlefeed') renderRows();
+      } else if (field === 'amountMl') {
+        editing.amountMl = e.target.value;
+        if (e.target.value !== '') editing.amountOz = (parseFloat(e.target.value) / 29.5735).toFixed(1);
+        if (editing.type === 'Bottlefeed') renderRows();
+      } else {
+        editing[field] = e.target.value;
+      }
       return;
     }
     var live = e.target.dataset && e.target.dataset.editLive;
@@ -918,7 +1102,7 @@
   document.addEventListener('change', onEditFieldChange);
   document.addEventListener('input', function(e){
     var field = e.target.dataset && e.target.dataset.edit;
-    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours') onEditFieldChange(e);
+    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours' || field === 'amountOz' || field === 'amountMl') onEditFieldChange(e);
   });
 
   window.addEventListener('online', flushPending);
