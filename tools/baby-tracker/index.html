@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Baby is Figureoutable</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Baby is Figureoutable">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f6f1e6">
+
+<!-- Shared Typography & Main Stylesheet from Village Site -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="site-nav__mark">Baby is Figureoutable <span>&amp; His Village of Love</span></a>
+  <ul class="site-nav__links">
+    <li><a href="events.html">Events</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li><a href="wishes.html">Wishes</a></li>
+  </ul>
+</nav>
+
+<main class="wrap" style="max-width: 540px; padding-top: 24px;">
+
+  <header class="hero" style="text-align: center; margin-bottom: 24px;">
+    <div class="hero__inner">
+      <h1>Baby is Figureoutable</h1>
+      <div class="age-counter" id="age" style="margin-top: 8px;"></div>
+    </div>
+  </header>
+
+  <div class="card" id="panelActions" style="margin-bottom: 24px;">
+    <div class="row" id="rowSleep"></div>
+    <div class="row" id="rowFeed"></div>
+    <div class="row" id="rowDiaper"></div>
+    <div class="row" id="rowBath"></div>
+    <div class="row" id="rowMedicine"></div>
+  </div>
+
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="summary-tabs" style="display:flex; border-bottom: 1px solid var(--paper-line, #e3d9c4);">
+      <button class="tab-btn active" data-range="today" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Today</button>
+      <button class="tab-btn" data-range="24h" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Last 24h</button>
+    </div>
+    <div class="summary-body" id="summaryBody"></div>
+  </div>
+
+  <h3 style="margin-bottom: 12px;">Recent</h3>
+  <div class="card" id="recentPanel"></div>
+
+  <div class="sync-note" id="syncNote" style="text-align:center; margin-top:16px; font-size:0.85rem; opacity:0.8;"></div>
+
+</main>
+
+<script>
+(function(){
+
+  // ---------- Configuration ----------
+  var CONFIG = {
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxz-G6Mxu6IMxsnKE3noswcClorYMylOqrG6sFveYlcJNs0K4wx4EsFz_tEWwq1iNFD/exec",
+    PROFILE_NAME: "Jujube",
+    CAREGIVER: "Alice",
+    TIMEZONE: "America/Los_Angeles",
+    BIRTH_DATE: "2026-06-12"
+  };
+  var configured = !CONFIG.APPS_SCRIPT_URL.startsWith("PASTE_");
+
+  // ---------- Storage keys ----------
+  var K_TIMERS = 'jujube_timers_v2';
+  var K_PENDING = 'jujube_pending_sync';
+  var K_CACHE = 'jujube_recent_cache';
+
+  // ---------- Transient UI state ----------
+  var editing = null; 
+  var currentSummaryRange = 'today';
+
+  // ---------- Helpers ----------
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function formatDateTime(ms){
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' +
+           pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  function toLocalInputValue(ms){
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function fromLocalInputValue(str){
+    var parts = str.split('T');
+    var dateParts = parts[0].split('-').map(Number);
+    var timeParts = (parts[1]||'00:00').split(':').map(Number);
+    return new Date(dateParts[0], dateParts[1]-1, dateParts[2], timeParts[0], timeParts[1], 0).getTime();
+  }
+
+  function formatElapsed(totalSeconds){
+    totalSeconds = Math.max(0, Math.floor(totalSeconds));
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+    if (h > 0) return h + ':' + pad(m) + ':' + pad(s);
+    return m + ':' + pad(s);
+  }
+
+  function formatDuration(totalSeconds){
+    totalSeconds = Math.max(0, Math.round(totalSeconds));
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.round((totalSeconds % 3600) / 60);
+    if (h > 0) return h + 'h ' + m + 'm';
+    if (totalSeconds >= 60) return m + 'm';
+    return totalSeconds + 's';
+  }
+
+  function formatRelative(ms){
+    var diff = Math.max(0, Date.now() - ms);
+    var mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    var remMins = mins % 60;
+    if (hrs < 24) return hrs + 'h ' + remMins + 'm ago';
+    var days = Math.floor(hrs / 24);
+    return days + 'd ago';
+  }
+
+  function computeAge(birthDateStr){
+    var birth = new Date(birthDateStr + 'T00:00:00');
+    var now = new Date();
+    var months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    var days = now.getDate() - birth.getDate();
+    if (days < 0){
+      months -= 1;
+      var prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months <= 0) return days + (days === 1 ? ' day old' : ' days old');
+    return months + ' mo ' + days + 'd';
+  }
+
+  function uid(){
+    return 't-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ---------- Local storage state ----------
+  function getTimers(){ try { return JSON.parse(localStorage.getItem(K_TIMERS)) || {}; } catch(e){ return {}; } }
+  function setTimers(t){ localStorage.setItem(K_TIMERS, JSON.stringify(t)); }
+
+  function getPending(){ try { return JSON.parse(localStorage.getItem(K_PENDING)) || []; } catch(e){ return []; } }
+  function setPending(list){ localStorage.setItem(K_PENDING, JSON.stringify(list)); }
+
+  function getCache(){ try { return JSON.parse(localStorage.getItem(K_CACHE)) || []; } catch(e){ return []; } }
+  function setCache(list){ localStorage.setItem(K_CACHE, JSON.stringify(list)); }
+
+  function addCacheEntry(entry){
+    var cache = getCache();
+    cache.unshift(entry);
+    setCache(cache.slice(0, 30));
+  }
+  function updateCacheEntry(key, entry){
+    var cache = getCache();
+    for (var i=0;i<cache.length;i++){
+      if (cache[i]['_activityKey'] === key){ cache[i] = Object.assign({}, cache[i], entry); break; }
+    }
+    setCache(cache);
+  }
+  function removeCacheEntry(key){
+    setCache(getCache().filter(function(e){ return e['_activityKey'] !== key; }));
+  }
+  function getLastFeedSide(){
+    var cache = getCache();
+    for (var i=0;i<cache.length;i++){
+      if (cache[i]['Type'] === 'Breastfeed'){
+        return cache[i]['[Breastfeed] End Side'] || cache[i]['[Breastfeed] Begin Side'] || null;
+      }
+    }
+    return null;
+  }
+
+  // ---------- Networking ----------
+  function queueOp(payload){
+    var pending = getPending();
+    pending.push(payload);
+    setPending(pending);
+    flushPending();
+  }
+
+  function flushPending(){
+    if (!configured) return;
+    var pending = getPending();
+    if (pending.length === 0) { updateSyncNote(); return; }
+    var next = pending[0];
+    var rest = pending.slice(1);
+    fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(next)
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (res && res.ok){
+        setPending(rest);
+        updateSyncNote();
+        if (rest.length > 0) flushPending();
+      } else {
+        updateSyncNote();
+      }
+    }).catch(function(){ updateSyncNote(); });
+  }
+
+  function updateSyncNote(){
+    var pending = getPending();
+    var el = document.getElementById('syncNote');
+    if (!configured || pending.length === 0){ el.textContent = ''; }
+    else { el.textContent = pending.length + ' entr' + (pending.length === 1 ? 'y' : 'ies') + ' waiting to sync\u2026'; }
+  }
+
+  function fetchRecent(){
+    if (!configured) return;
+    fetch(CONFIG.APPS_SCRIPT_URL + '?action=recent&limit=20')
+      .then(function(r){ return r.json(); })
+      .then(function(res){ if (res && res.ok){ setCache(res.entries); renderRecent(); renderRows(); } })
+      .catch(function(){});
+  }
+
+  function fetchSummary(){
+    if (!configured) return;
+    fetch(CONFIG.APPS_SCRIPT_URL + '?action=summary&range=' + currentSummaryRange)
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (res && res.ok){
+          localStorage.setItem('jujube_summary_' + currentSummaryRange, JSON.stringify(res.summary));
+          renderSummary(res.summary);
+        }
+      }).catch(function(){});
+  }
+
+  // ---------- Rendering: rows ----------
+  function renderRows(){ renderSleepRow(); renderFeedRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); }
+
+  function formTag(d){
+    if (d.mode === 'edit') return '<span class="tag">edit</span>';
+    if (d.reviewing) return '<span class="tag">save</span>';
+    return '<span class="tag">manual</span>';
+  }
+
+  function formActions(mode, saveLabel, saveDisabled){
+    return '<div class="form-actions" style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">' +
+      (mode === 'edit' ? '<button class="btn btn--danger" data-action="delete-entry">Delete</button>' : '<span></span>') +
+      '<div class="form-actions-right" style="display:flex; gap:8px;">' +
+        '<button class="btn" data-action="cancel-edit">Cancel</button>' +
+        '<button class="btn btn--primary" data-action="save-entry"' + (saveDisabled ? ' disabled' : '') + '>' + (saveLabel||'Save') + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderSleepRow(){
+    var el = document.getElementById('rowSleep');
+    var t = getTimers().Sleep;
+
+    if (t){
+      el.className = 'row row-active';
+      el.innerHTML =
+        '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<div class="row-label">Sleep<span class="tag">running</span></div>' +
+          '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="sleep-start">' +
+        '</div>' +
+        '<div class="row-timer" id="sleepTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.startedAt)/1000) + '</div>' +
+        '<div class="row-active-actions"><button class="btn btn--primary" data-action="stop-sleep">Stop</button></div>';
+      return;
+    }
+
+    if (editing && editing.mode === 'new' && editing.type === 'Sleep'){
+      el.className = 'row row-active';
+      el.innerHTML = renderSleepForm(editing);
+      return;
+    }
+
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Sleep</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to start timing</div></div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<button class="btn btn--primary" data-action="start-sleep">Start</button>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Sleep">log manually</button>' +
+      '</div>';
+  }
+
+  function renderSleepForm(d){
+    return (
+      '<div class="row-label" style="font-weight:600;">Sleep' + formTag(d) + '</div>' +
+      '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">End</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
+      '</div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode)
+    );
+  }
+
+  function feedSubLabel(t){
+    var currentElapsed = (Date.now() - t.currentSideStart)/1000;
+    var liveLeft = t.currentSide === 'LEFT' ? t.leftSeconds + currentElapsed : t.leftSeconds;
+    var liveRight = t.currentSide === 'RIGHT' ? t.rightSeconds + currentElapsed : t.rightSeconds;
+    return 'L ' + formatDuration(liveLeft) + ' \u00b7 R ' + formatDuration(liveRight);
+  }
+
+  function renderFeedRow(){
+    var el = document.getElementById('rowFeed');
+    var t = getTimers().Breastfeed;
+
+    if (t){
+      var other = t.currentSide === 'LEFT' ? 'RIGHT' : 'LEFT';
+      el.className = 'row row-active';
+      el.innerHTML =
+        '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<div class="row-label">Breastfeed<span class="tag">' + t.currentSide.toLowerCase() + '</span></div>' +
+          '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="feed-start">' +
+        '</div>' +
+        '<div class="row-timer" id="feedTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.currentSideStart)/1000) + '</div>' +
+        '<div class="row-sub" id="feedSubText" style="font-size:0.85rem; opacity:0.8; margin-bottom:8px;">' + feedSubLabel(t) + '</div>' +
+        '<div class="row-active-actions" style="display:flex; gap:8px;">' +
+          '<button class="btn" data-action="switch-side" data-side="' + other + '">Switch to ' + other.toLowerCase() + '</button>' +
+          '<button class="btn btn--primary" data-action="stop-feed">Stop</button>' +
+        '</div>';
+      return;
+    }
+
+    if (editing && editing.mode === 'new' && editing.type === 'Breastfeed'){
+      el.className = 'row row-active';
+      el.innerHTML = renderFeedForm(editing);
+      return;
+    }
+
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    var lastSide = getLastFeedSide();
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Breastfeed</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">' + (lastSide ? 'Last was ' + lastSide.toLowerCase() : 'Choose a side') + '</div></div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<div class="row-actions" style="display:flex; gap:6px;">' +
+          '<button class="btn' + (lastSide==='RIGHT'?' btn--gold':'') + '" data-action="start-feed" data-side="LEFT">Left</button>' +
+          '<button class="btn' + (lastSide==='LEFT'?' btn--gold':'') + '" data-action="start-feed" data-side="RIGHT">Right</button>' +
+        '</div>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Breastfeed">log manually</button>' +
+      '</div>';
+  }
+
+  function sideChip(field, value, d, label){
+    var selected = d[field] === value;
+    return '<button class="btn' + (selected?' btn--primary':'') + '" data-side-field="' + field + '" data-side-value="' + value + '">' + label + '</button>';
+  }
+
+  function renderFeedForm(d){
+    return (
+      '<div class="row-label" style="font-weight:600;">Breastfeed' + formTag(d) + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">Began on</div><div class="chip-row" style="display:flex; gap:6px;">' + sideChip('beginSide','LEFT',d,'Left') + sideChip('beginSide','RIGHT',d,'Right') + '</div></div>' +
+      '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">Ended on</div><div class="chip-row" style="display:flex; gap:6px;">' + sideChip('endSide','LEFT',d,'Left') + sideChip('endSide','RIGHT',d,'Right') + '</div></div>' +
+      '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Left (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.leftMin + '" data-edit="leftMin"></div>' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Right (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.rightMin + '" data-edit="rightMin"></div>' +
+      '</div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode)
+    );
+  }
+
+  function attrGroup(title, group, options, d){
+    return '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">' + title + '</div><div class="chip-row" style="display:flex; flex-wrap:wrap; gap:6px;">' +
+      options.map(function(opt){
+        var selected = d[group] === opt;
+        return '<button class="btn' + (selected?' btn--primary':'') + '" data-group="' + group + '" data-value="' + opt + '">' + opt + '</button>';
+      }).join('') +
+    '</div></div>';
+  }
+
+  function renderDiaperForm(d){
+    return (
+      '<div class="row-label" style="font-weight:600;">Diaper' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      attrGroup('Type','diaperType',['Wet','Dirty','Dirty Wet'], d) +
+      attrGroup('Color','color',['Yellow','Green','Brown','Black','Red'], d) +
+      attrGroup('Texture','texture',['Seedy','Mushy','Runny','Watery','Hard'], d) +
+      attrGroup('Size','size',['Small','Medium','Large'], d) +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode, 'Log', !d.diaperType)
+    );
+  }
+
+  function renderEntryForm(d){
+    if (d.type === 'Sleep') return renderSleepForm(d);
+    if (d.type === 'Breastfeed') return renderFeedForm(d);
+    if (d.type === 'Diaper') return renderDiaperForm(d);
+    if (d.type === 'Bath') return renderBathForm(d);
+    if (d.type === 'Medicine') return renderMedicineForm(d);
+    return '';
+  }
+
+  function renderDiaperRow(){
+    var el = document.getElementById('rowDiaper');
+    if (editing && editing.mode === 'new' && editing.type === 'Diaper'){
+      el.className = 'row row-active';
+      el.innerHTML = renderDiaperForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Diaper</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to log</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="Diaper">\uFF0B Log</button>';
+  }
+
+  function renderBathForm(d){
+    return (
+      '<div class="row-label" style="font-weight:600;">Bath' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode)
+    );
+  }
+
+  function renderBathRow(){
+    var el = document.getElementById('rowBath');
+    if (editing && editing.mode === 'new' && editing.type === 'Bath'){
+      el.className = 'row row-active';
+      el.innerHTML = renderBathForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Bath</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to log</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="Bath">\uFF0B Log</button>';
+  }
+
+  // ---------- Medicine ----------
+  function getCurrentMed(){ try { return JSON.parse(localStorage.getItem('jujube_current_med')) || null; } catch(e){ return null; } }
+  function setCurrentMed(m){ localStorage.setItem('jujube_current_med', JSON.stringify(m)); }
+
+  function getLastDose(){
+    var cache = getCache();
+    for (var i=0;i<cache.length;i++){
+      if (cache[i]['Type'] === 'Medical'){
+        return Number(cache[i]['Start Date/time (Epoch)']) || Date.parse(cache[i]['Start Date/time']);
+      }
+    }
+    return null;
+  }
+
+  function doseStatusText(med, lastDoseMs){
+    if (!lastDoseMs) return 'No doses logged yet';
+    var nextDue = lastDoseMs + med.intervalHours*3600000;
+    var diff = nextDue - Date.now();
+    if (diff <= 0) return 'Due now' + (Math.abs(diff) > 60000 ? ' \u00b7 overdue ' + formatDuration(Math.abs(diff)/1000) : '');
+    return 'Next dose in ' + formatDuration(diff/1000);
+  }
+
+  function renderMedConfigForm(d){
+    return (
+      '<div class="row-label" style="font-weight:600;">Medicine setup</div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Medication</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="e.g. Tylenol" value="' + escapeHtml(d.name||'') + '" data-edit="name"></div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Every (hours)</div><input type="number" min="1" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.intervalHours + '" data-edit="intervalHours"></div>' +
+      '<div class="form-actions" style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">' +
+        '<button class="btn" data-action="cancel-edit">Cancel</button>' +
+        '<button class="btn btn--primary" data-action="save-med-config">Save</button>' +
+      '</div>'
+    );
+  }
+
+  function renderMedicineForm(d){
+    var med = getCurrentMed();
+    var medName = (d.mode === 'edit') ? d.medName : (med ? med.name : '');
+    return (
+      '<div class="row-label" style="font-weight:600;">Medicine' + formTag(d) + '</div>' +
+      '<div class="row-hint" style="margin-bottom:8px; font-size:0.85rem; opacity:0.8;">' + escapeHtml(medName || 'No medication set') + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      formActions(d.mode)
+    );
+  }
+
+  function renderMedicineRow(){
+    var el = document.getElementById('rowMedicine');
+    var med = getCurrentMed();
+
+    if (editing && editing.type === 'Medicine' && editing.mode === 'config'){
+      el.className = 'row row-active';
+      el.innerHTML = renderMedConfigForm(editing);
+      return;
+    }
+    if (editing && editing.mode === 'new' && editing.type === 'Medicine'){
+      el.className = 'row row-active';
+      el.innerHTML = renderMedicineForm(editing);
+      return;
+    }
+
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0;';
+    if (!med || !med.name){
+      el.innerHTML =
+        '<div><div class="row-label" style="font-weight:600;">Medicine</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Set up a medication to track doses</div></div>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-med-config">set up</button>';
+      return;
+    }
+
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Medicine</div>' +
+        '<div class="row-hint" style="font-size:0.85rem; opacity:0.7;">' + escapeHtml(med.name) + ', every ' + med.intervalHours + 'h</div>' +
+        '<div class="row-hint" id="doseStatusText" style="font-size:0.85rem; opacity:0.8;">' + doseStatusText(med, getLastDose()) + '</div>' +
+      '</div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<button class="btn btn--primary" data-action="open-new" data-type="Medicine">Log dose</button>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-med-config">change</button>' +
+      '</div>';
+  }
+
+  function saveMedConfig(){
+    if (!editing || editing.mode !== 'config') return;
+    setCurrentMed({ name: editing.name || '', intervalHours: Number(editing.intervalHours) || 6 });
+    editing = null;
+    renderRows();
+  }
+
+  // ---------- Rendering: recent ----------
+  function renderRecent(){
+    var cache = getCache();
+    var panel = document.getElementById('recentPanel');
+    if (cache.length === 0){ panel.innerHTML = '<div style="padding:16px; text-align:center; opacity:0.7;">Nothing logged yet.</div>'; return; }
+    panel.innerHTML = cache.map(entryRowHtml).join('');
+  }
+
+  function entryRowHtml(e){
+    var key = e['_activityKey'];
+    if (editing && editing.mode === 'edit' && editing.activityKey === key){
+      return '<div class="entry-editing" style="padding:12px 0;">' + renderEntryForm(editing) + '</div>';
+    }
+
+    var type = e['Type'];
+    var text = type, detail = '';
+    var startMs = Number(e['Start Date/time (Epoch)']) || Date.parse(e['Start Date/time']);
+
+    if (type === 'Sleep'){
+      text = 'Sleep';
+      detail = formatDuration(Number(e['[Sleep] Duration (Seconds)'])||0);
+    } else if (type === 'Breastfeed'){
+      text = 'Breastfeed';
+      var l = Number(e['[Breastfeed] Left Duration (Seconds)'])||0;
+      var r = Number(e['[Breastfeed] Right Duration (Seconds)'])||0;
+      var parts = [];
+      if (l) parts.push('L ' + formatDuration(l));
+      if (r) parts.push('R ' + formatDuration(r));
+      detail = parts.join(' \u00b7 ');
+    } else if (type === 'Diaper'){
+      text = 'Diaper';
+      detail = e['[Diaper] Type'] || '';
+    } else if (type === 'Routine' && e['[Routine] Routine'] === 'Bath'){
+      text = 'Bath';
+    } else if (type === 'Medical'){
+      text = 'Medicine';
+      detail = e['[Medical] Medication'] || '';
+    }
+    if (e['Note']) detail = detail ? detail + ' \u00b7 ' + e['Note'] : e['Note'];
+
+    return '<div class="entry" data-key="' + key + '" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4); cursor:pointer;">' +
+      '<div class="entry-main">' +
+      '<div><div class="entry-text" style="font-weight:600;">' + text + '</div>' +
+      (detail ? '<div class="entry-detail" style="font-size:0.85rem; opacity:0.7;">' + escapeHtml(detail) + '</div>' : '') +
+      '</div></div>' +
+      '<div class="entry-right" style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">' +
+        '<div class="entry-time" style="font-size:0.8rem; opacity:0.8;">' + formatRelative(startMs) + '</div>' +
+        '<button class="btn" style="font-size:0.75rem; color:var(--coral, #c97a52); border:none; background:none; padding:0;" data-action="quick-delete" data-key="' + key + '">delete</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ---------- Rendering: summary ----------
+  function summaryLine(label, count, detail){
+    return '<div class="summary-row" style="display:flex; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--paper-line, #e3d9c4);">' +
+      '<div class="entry-main"><div><div class="entry-text" style="font-weight:600;">' + label + ' <span style="font-size:0.8rem; opacity:0.8;">(' + count + ')</span></div>' +
+      (detail ? '<div class="entry-detail" style="font-size:0.85rem; opacity:0.7;">' + detail + '</div>' : '') + '</div></div></div>';
+  }
+
+  function renderSummary(summary){
+    var el = document.getElementById('summaryBody');
+    var bathCount = (summary && summary.bath) ? summary.bath.count : 0;
+    var medCount = (summary && summary.medical) ? summary.medical.count : 0;
+    if (!summary || (summary.sleep.count===0 && summary.breastfeed.count===0 && summary.diaper.count===0 && bathCount===0 && medCount===0)){
+      el.innerHTML = '<div style="padding:16px; text-align:center; opacity:0.7;">Nothing logged in this window yet.</div>';
+      return;
+    }
+    var rows = [];
+    if (summary.sleep.count>0) rows.push(summaryLine('Sleep', summary.sleep.count, formatDuration(summary.sleep.totalSeconds) + ' total'));
+    if (summary.breastfeed.count>0) rows.push(summaryLine('Breastfeed', summary.breastfeed.count,
+      formatDuration(summary.breastfeed.totalSeconds) + ' total \u00b7 L ' + formatDuration(summary.breastfeed.leftSeconds) + ' \u00b7 R ' + formatDuration(summary.breastfeed.rightSeconds)));
+    if (summary.diaper.count>0) rows.push(summaryLine('Diaper', summary.diaper.count, summary.diaper.wet + ' wet \u00b7 ' + summary.diaper.dirty + ' dirty'));
+    if (bathCount>0) rows.push(summaryLine('Bath', bathCount, ''));
+    if (medCount>0) rows.push(summaryLine('Medicine', medCount, ''));
+    el.innerHTML = rows.join('');
+  }
+
+  // ---------- Timer actions ----------
+  function startSleep(){
+    var timers = getTimers();
+    timers.Sleep = { startedAt: Date.now() };
+    setTimers(timers);
+    renderSleepRow();
+  }
+
+  function stopSleep(){
+    var timers = getTimers();
+    var t = timers.Sleep;
+    if (!t) return;
+    var endedAt = Date.now();
+    timers.Sleep = null;
+    setTimers(timers);
+    editing = { mode: 'new', reviewing: true, type: 'Sleep', activityKey: null,
+      startMs: t.startedAt, endMs: endedAt, note: '' };
+    renderRows();
+  }
+
+  function setSleepStartLive(value){
+    var timers = getTimers();
+    if (!timers.Sleep) return;
+    timers.Sleep.startedAt = fromLocalInputValue(value);
+    setTimers(timers);
+    tickSleep();
+  }
+
+  function startFeed(side){
+    var timers = getTimers();
+    timers.Breastfeed = { startedAt: Date.now(), beginSide: side, currentSide: side, currentSideStart: Date.now(), leftSeconds:0, rightSeconds:0 };
+    setTimers(timers);
+    renderFeedRow();
+  }
+
+  function switchSide(newSide){
+    var timers = getTimers();
+    var t = timers.Breastfeed;
+    if (!t) return;
+    var elapsed = (Date.now() - t.currentSideStart)/1000;
+    if (t.currentSide === 'LEFT') t.leftSeconds += elapsed; else t.rightSeconds += elapsed;
+    t.currentSide = newSide;
+    t.currentSideStart = Date.now();
+    setTimers(timers);
+    renderFeedRow();
+  }
+
+  function stopFeed(){
+    var timers = getTimers();
+    var t = timers.Breastfeed;
+    if (!t) return;
+    var elapsed = (Date.now() - t.currentSideStart)/1000;
+    if (t.currentSide === 'LEFT') t.leftSeconds += elapsed; else t.rightSeconds += elapsed;
+    timers.Breastfeed = null;
+    setTimers(timers);
+    editing = { mode: 'new', reviewing: true, type: 'Breastfeed', activityKey: null,
+      startMs: t.startedAt, beginSide: t.beginSide, endSide: t.currentSide,
+      leftMin: Math.round(t.leftSeconds/60), rightMin: Math.round(t.rightSeconds/60), note: '' };
+    renderRows();
+  }
+
+  function setFeedStartLive(value){
+    var timers = getTimers();
+    var t = timers.Breastfeed;
+    if (!t) return;
+    var newStart = fromLocalInputValue(value);
+    var delta = newStart - t.startedAt;
+    t.startedAt = newStart;
+    t.currentSideStart += delta;
+    setTimers(timers);
+    tickFeed();
+  }
+
+  // ---------- Manual add / edit / delete ----------
+  function openNew(type){
+    var now = Date.now();
+    editing = { mode: 'new', type: type, activityKey: null, note: '' };
+    if (type === 'Sleep'){
+      editing.startMs = now - 15*60000; editing.endMs = now;
+    } else if (type === 'Breastfeed'){
+      editing.startMs = now - 10*60000;
+      editing.beginSide = 'LEFT'; editing.endSide = 'LEFT';
+      editing.leftMin = 10; editing.rightMin = 0;
+    } else if (type === 'Diaper'){
+      editing.startMs = now;
+      editing.diaperType = null; editing.color = null; editing.texture = null; editing.size = null;
+    } else if (type === 'Bath' || type === 'Medicine'){
+      editing.startMs = now;
+    }
+    renderRows();
+  }
+
+  function openEdit(entry){
+    var rawType = entry['Type'];
+    var type = rawType;
+    if (rawType === 'Routine' && entry['[Routine] Routine'] === 'Bath') type = 'Bath';
+    else if (rawType === 'Medical') type = 'Medicine';
+    var startMs = Number(entry['Start Date/time (Epoch)']) || Date.parse(entry['Start Date/time']);
+    editing = { mode: 'edit', type: type, activityKey: entry['_activityKey'], note: entry['Note']||'', startMs: startMs };
+    if (type === 'Sleep'){
+      editing.endMs = Number(entry['[Sleep] End Date/time (Epoch)']) || (startMs + (Number(entry['[Sleep] Duration (Seconds)'])||0)*1000);
+    } else if (type === 'Breastfeed'){
+      editing.beginSide = entry['[Breastfeed] Begin Side'] || 'LEFT';
+      editing.endSide = entry['[Breastfeed] End Side'] || editing.beginSide;
+      editing.leftMin = Math.round((Number(entry['[Breastfeed] Left Duration (Seconds)'])||0)/60);
+      editing.rightMin = Math.round((Number(entry['[Breastfeed] Right Duration (Seconds)'])||0)/60);
+    } else if (type === 'Diaper'){
+      editing.diaperType = entry['[Diaper] Type'] || null;
+      editing.color = entry['[Diaper] Dirty Color'] || null;
+      editing.texture = entry['[Diaper] Dirty Texture'] || null;
+      editing.size = entry['[Diaper] Detail'] || null;
+    } else if (type === 'Medicine'){
+      editing.medName = entry['[Medical] Medication'] || '';
+    }
+    renderRecent();
+  }
+
+  function cancelEdit(){
+    editing = null;
+    renderRows(); renderRecent();
+  }
+
+  function buildPayloadFromEditing(d){
+    var base = {
+      "Type": d.type, "Profile Name": CONFIG.PROFILE_NAME,
+      "Start Date/time": formatDateTime(d.startMs), "Start Date/time (Epoch)": d.startMs,
+      "Created By Caregiver": CONFIG.CAREGIVER, "Last Updated By Caregiver": CONFIG.CAREGIVER,
+      "Time Zone": CONFIG.TIMEZONE, "Note": d.note || ""
+    };
+    if (d.type === 'Sleep'){
+      base["[Sleep] Duration (Seconds)"] = Math.max(0, Math.round((d.endMs - d.startMs)/1000));
+      base["[Sleep] End Date/time"] = formatDateTime(d.endMs);
+      base["[Sleep] End Date/time (Epoch)"] = d.endMs;
+    } else if (d.type === 'Breastfeed'){
+      base["[Breastfeed] Begin Side"] = d.beginSide;
+      base["[Breastfeed] End Side"] = d.endSide;
+      base["[Breastfeed] Left Duration (Seconds)"] = Math.max(0, Math.round((Number(d.leftMin)||0)*60));
+      base["[Breastfeed] Right Duration (Seconds)"] = Math.max(0, Math.round((Number(d.rightMin)||0)*60));
+    } else if (d.type === 'Diaper'){
+      base["[Diaper] Type"] = d.diaperType;
+      base["[Diaper] Dirty Color"] = d.color || "";
+      base["[Diaper] Dirty Texture"] = d.texture || "";
+      base["[Diaper] Detail"] = d.size || "";
+    } else if (d.type === 'Bath'){
+      base["Type"] = "Routine";
+      base["[Routine] Routine"] = "Bath";
+    } else if (d.type === 'Medicine'){
+      base["Type"] = "Medical";
+      var med = getCurrentMed();
+      base["[Medical] Medication"] = (d.mode === 'edit' ? d.medName : (med ? med.name : '')) || '';
+    }
+    return base;
+  }
+
+  function saveEntry(){
+    if (!editing) return;
+    if (editing.type === 'Diaper' && !editing.diaperType) return;
+    var payload = buildPayloadFromEditing(editing);
+    if (editing.mode === 'edit'){
+      payload['_op'] = 'update';
+      payload['_activityKey'] = editing.activityKey;
+      updateCacheEntry(editing.activityKey, payload);
+    } else {
+      payload['_activityKey'] = uid();
+      payload['_familyKey'] = 'local';
+      payload['_profileKey'] = 'local';
+      addCacheEntry(payload);
+    }
+    queueOp(payload);
+    editing = null;
+    renderRows(); renderRecent(); fetchSummary();
+  }
+
+  function deleteEntry(){
+    if (!editing || editing.mode !== 'edit') return;
+    if (!confirm('Delete this entry?')) return;
+    var key = editing.activityKey;
+    queueOp({ _op: 'delete', _activityKey: key });
+    removeCacheEntry(key);
+    editing = null;
+    renderRows(); renderRecent(); fetchSummary();
+  }
+
+  // ---------- Ticking ----------
+  function tickSleep(){
+    var t = getTimers().Sleep;
+    var el = document.getElementById('sleepTimerText');
+    if (t && el) el.textContent = formatElapsed((Date.now()-t.startedAt)/1000);
+  }
+  function tickFeed(){
+    var t = getTimers().Breastfeed;
+    var elText = document.getElementById('feedTimerText');
+    var elSub = document.getElementById('feedSubText');
+    if (t && elText){
+      var currentElapsed = (Date.now() - t.currentSideStart)/1000;
+      elText.textContent = formatElapsed(currentElapsed);
+      if (elSub) elSub.textContent = feedSubLabel(t);
+    }
+  }
+
+  function tickMed(){
+    if (editing && editing.type === 'Medicine') return;
+    var med = getCurrentMed();
+    if (!med || !med.name) return;
+    var el = document.getElementById('doseStatusText');
+    if (el) el.textContent = doseStatusText(med, getLastDose());
+  }
+
+  // ---------- Event wiring ----------
+  document.addEventListener('click', function(e){
+    var groupChip = e.target.closest('[data-group]');
+    if (groupChip && editing){
+      var group = groupChip.dataset.group, value = groupChip.dataset.value;
+      editing[group] = (editing[group] === value) ? null : value;
+      if (editing.mode === 'new') renderRows(); else renderRecent();
+      return;
+    }
+    var sideChipEl = e.target.closest('[data-side-field]');
+    if (sideChipEl && editing){
+      editing[sideChipEl.dataset.sideField] = sideChipEl.dataset.sideValue;
+      if (editing.mode === 'new') renderRows(); else renderRecent();
+      return;
+    }
+    var tab = e.target.closest('.tab-btn');
+    if (tab){
+      currentSummaryRange = tab.dataset.range;
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b===tab); });
+      var cached = localStorage.getItem('jujube_summary_' + currentSummaryRange);
+      if (cached) renderSummary(JSON.parse(cached));
+      fetchSummary();
+      return;
+    }
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var action = btn.dataset.action;
+    if (action === 'start-sleep') startSleep();
+    else if (action === 'stop-sleep') stopSleep();
+    else if (action === 'start-feed') startFeed(btn.dataset.side);
+    else if (action === 'switch-side') switchSide(btn.dataset.side);
+    else if (action === 'stop-feed') stopFeed();
+    else if (action === 'open-new') openNew(btn.dataset.type);
+    else if (action === 'open-med-config'){
+      var currentMed = getCurrentMed() || { name:'', intervalHours:6 };
+      editing = { mode:'config', type:'Medicine', name: currentMed.name, intervalHours: currentMed.intervalHours };
+      renderRows();
+    }
+    else if (action === 'save-med-config') saveMedConfig();
+    else if (action === 'cancel-edit') cancelEdit();
+    else if (action === 'save-entry') saveEntry();
+    else if (action === 'delete-entry') deleteEntry();
+    else if (action === 'quick-delete'){
+      var qkey = btn.dataset.key;
+      if (confirm('Delete this entry?')){
+        queueOp({ _op: 'delete', _activityKey: qkey });
+        removeCacheEntry(qkey);
+        if (editing && editing.activityKey === qkey) editing = null;
+        renderRecent(); renderRows(); fetchSummary();
+      }
+    }
+  });
+
+  document.addEventListener('dblclick', function(e){
+    var row = e.target.closest('.entry');
+    if (!row) return;
+    var key = row.dataset.key;
+    if (!key) return;
+    var entry = getCache().filter(function(x){ return x['_activityKey']===key; })[0];
+    if (entry) openEdit(entry);
+  });
+
+  function onEditFieldChange(e){
+    var field = e.target.dataset && e.target.dataset.edit;
+    if (field && editing){
+      if (field === 'startMs' || field === 'endMs') editing[field] = fromLocalInputValue(e.target.value);
+      else editing[field] = e.target.value;
+      return;
+    }
+    var live = e.target.dataset && e.target.dataset.editLive;
+    if (live === 'sleep-start') setSleepStartLive(e.target.value);
+    else if (live === 'feed-start') setFeedStartLive(e.target.value);
+  }
+  document.addEventListener('change', onEditFieldChange);
+  document.addEventListener('input', function(e){
+    var field = e.target.dataset && e.target.dataset.edit;
+    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours') onEditFieldChange(e);
+  });
+
+  window.addEventListener('online', flushPending);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible'){
+      renderRows(); flushPending(); fetchRecent(); fetchSummary();
+    }
+  });
+
+  // ---------- Init ----------
+  document.getElementById('age').textContent = computeAge(CONFIG.BIRTH_DATE);
+  renderRecent();
+  renderRows();
+  fetchRecent();
+  fetchSummary();
+  updateSyncNote();
+  flushPending();
+  setInterval(function(){ tickSleep(); tickFeed(); tickMed(); }, 1000);
+
+})();
+</script>
+</body>
+</html>
