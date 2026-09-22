@@ -3,247 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Jujube Log</title>
+<title>Baby is Figureoutable</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Jujube Log">
+<meta name="apple-mobile-web-app-title" content="Baby is Figureoutable">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f6f1e6">
 
-<style>
-  :root{
-    --paper: #f6f1e6;
-    --paper-deep: #efe7d6;
-    --paper-line: #e3d9c4;
-    --ink: #4a4038;
-    --ink-muted: #8a7f6e;
-    --ink-faint: #b3a791;
-    --sage: #7f9a76;
-    --sage-soft: rgba(127,154,118,0.16);
-    --sky: #6f9cb3;
-    --sky-soft: rgba(111,156,179,0.16);
-    --coral: #c97a52;
-    --coral-soft: rgba(201,122,82,0.14);
-    --gold: #c39a4a;
-    --gold-soft: rgba(195,154,74,0.18);
-    --clay: #b98a72;
-    --clay-soft: rgba(185,138,114,0.16);
-    --radius: 16px;
-    --shadow: 0 2px 10px rgba(74,64,56,0.08);
-  }
+<!-- Shared Typography & Main Stylesheet from Village Site -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
 
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper: #262019;
-      --paper-deep: #322a22;
-      --paper-line: #43392d;
-      --ink: #ece1cf;
-      --ink-muted: #b3a791;
-      --ink-faint: #7d7264;
-      --sage: #93ac8a;
-      --sage-soft: rgba(147,172,138,0.18);
-      --sky: #8db4c4;
-      --sky-soft: rgba(141,180,196,0.18);
-      --coral: #d99268;
-      --coral-soft: rgba(217,146,104,0.18);
-      --gold: #d4b06c;
-      --gold-soft: rgba(212,176,108,0.2);
-      --clay: #cf9d84;
-      --clay-soft: rgba(207,157,132,0.18);
-      --shadow: 0 2px 14px rgba(0,0,0,0.35);
-    }
-  }
-
-  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  html{ background: var(--paper); position:relative; }
-  html::before{
-    content:"";
-    position:fixed; inset:0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity:0.035;
-    pointer-events:none;
-    mix-blend-mode: multiply;
-    z-index:0;
-  }
-
-  body{
-    margin:0; min-height:100vh;
-    display:flex; justify-content:center;
-    color: var(--ink);
-    font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    position:relative; z-index:1;
-  }
-
-  main{ width:100%; max-width: 480px; padding: 0 18px calc(32px + env(safe-area-inset-bottom)); }
-
-  /* ---------- Hero ---------- */
-  .hero{ position:relative; margin: 0 -18px 18px; }
-  .hero-img{
-    width:100%; display:block;
-    aspect-ratio: 2.5 / 1;
-    object-fit: cover;
-    object-position: 50% 60%;
-    -webkit-mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
-    padding-top: env(safe-area-inset-top);
-  }
-  .hero-caption{ text-align:center; margin-top:-14px; }
-  .hero-caption h1{
-    font-size: 1.7rem; font-weight: 700; letter-spacing: -0.01em; margin: 0;
-  }
-  .age{ font-size: 0.85rem; color: var(--ink-muted); margin-top: 2px; }
-
-  /* ---------- Panels & rows ---------- */
-  .panel{
-    background: var(--paper-deep);
-    border: 1px solid var(--paper-line);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  .row{ padding: 16px 16px; border-bottom: 1px solid var(--paper-line); display:flex; align-items:center; justify-content:space-between; }
-  .row:last-child{ border-bottom:none; }
-  .row.row-active{ display:block; }
-
-  .row-label{ font-size: 1.02rem; font-weight: 600; }
-  .row-hint{ font-size: 0.78rem; color: var(--ink-faint); margin-top: 2px; }
-
-  .row-actions{ display:flex; gap:8px; }
-  .row-actions-col{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
-
-  .tag{
-    display:inline-block; font-size:0.68rem; font-weight:700; text-transform:lowercase;
-    background: var(--paper); border:1px solid var(--paper-line); color: var(--ink-muted);
-    border-radius: 999px; padding: 2px 8px; margin-left:6px; vertical-align:middle;
-  }
-
-  .chip{
-    appearance:none; border: 1px solid var(--paper-line); background: var(--paper);
-    color: var(--ink); border-radius: 10px; padding: 10px 14px;
-    font-size: 0.88rem; font-weight: 600; font-family: inherit; cursor:pointer;
-  }
-  .chip:active{ opacity:0.7; }
-  .chip-primary{ background: var(--sky); color: var(--paper); border-color: var(--sky); }
-  .chip-ghost{ background: transparent; font-size:1.1rem; padding: 8px 14px; }
-  .chip-suggested{ border-color: var(--gold); background: var(--gold-soft); }
-  .chip-select.selected{ background: var(--coral); color: var(--paper); border-color: var(--coral); }
-
-  .link-btn{
-    appearance:none; border:none; background:none; color: var(--ink-muted);
-    font-size: 0.78rem; font-family: inherit; text-decoration: underline;
-    padding: 2px; cursor:pointer;
-  }
-  .link-btn.danger{ color: var(--coral); }
-
-  /* ---------- Active / running / form state ---------- */
-  .row-active-sky{ background: linear-gradient(160deg, var(--sky-soft), transparent 75%); }
-  .row-active-gold{ background: linear-gradient(160deg, var(--gold-soft), transparent 75%); }
-  .row-active-coral{ background: linear-gradient(160deg, var(--coral-soft), transparent 75%); }
-  .row-active-sage{ background: linear-gradient(160deg, var(--sage-soft), transparent 75%); }
-  .row-active-clay{ background: linear-gradient(160deg, var(--clay-soft), transparent 75%); }
-
-  .row-active-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-
-  .row-timer{
-    font-size: 2.5rem; font-weight: 700; font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em; line-height:1.1; margin: 2px 0 10px;
-  }
-  .row-sub{ font-size: 0.8rem; color: var(--ink-muted); margin: -6px 0 12px; }
-
-  .row-active-actions{ display:flex; gap:10px; margin-top: 10px; }
-
-  .btn{
-    appearance:none; border:none; border-radius: 12px; padding: 13px 16px;
-    font-size: 0.92rem; font-weight: 700; font-family: inherit; cursor:pointer; flex:1;
-  }
-  .btn-fill{ background: var(--ink); color: var(--paper); }
-  .btn-outline{ background: transparent; color: var(--ink); border: 1px solid var(--paper-line); }
-  .btn:active{ opacity:0.75; }
-  .btn:disabled{ opacity:0.4; }
-
-  .time-input{
-    font-family: inherit; font-size: 0.76rem; color: var(--ink-muted);
-    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 8px;
-    padding: 4px 6px;
-  }
-
-  /* ---------- Attribute groups (diaper / sides) ---------- */
-  .attr-group{ margin: 10px 0; }
-  .attr-title{ font-size: 0.72rem; color: var(--ink-faint); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
-
-  .form-grid{ display:flex; gap:10px; margin: 10px 0; }
-  .form-field{ flex:1; }
-  .form-field.full{ flex-basis:100%; }
-  .form-label{ font-size: 0.72rem; color: var(--ink-faint); margin-bottom: 4px; }
-  .note-input{
-    width:100%; font-family: inherit; font-size: 0.88rem; color: var(--ink);
-    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 8px;
-    padding: 8px 10px;
-  }
-
-  .form-actions{ display:flex; align-items:center; justify-content:space-between; margin-top: 12px; gap:10px; }
-  .form-actions-right{ display:flex; align-items:center; gap:14px; }
-  .form-actions-right .btn{ flex: none; padding: 10px 18px; }
-
-  /* ---------- Summary ---------- */
-  .summary-tabs{ display:flex; border-bottom: 1px solid var(--paper-line); }
-  .tab-btn{
-    flex:1; appearance:none; border:none; background:none; font-family:inherit;
-    color: var(--ink-faint); font-size: 0.84rem; font-weight:700; padding: 12px 0; cursor:pointer;
-    border-bottom: 2px solid transparent;
-  }
-  .tab-btn.active{ color: var(--ink); border-bottom-color: var(--coral); }
-  .summary-body{ padding: 4px 0; }
-  .summary-row{ display:flex; align-items:center; padding: 12px 16px; border-bottom: 1px solid var(--paper-line); }
-  .summary-row:last-child{ border-bottom:none; }
-
-  /* ---------- Recent list ---------- */
-  .section-title{ font-size: 0.85rem; color: var(--ink-muted); margin: 0 0 10px 4px; }
-
-  .entry{ display:flex; justify-content:space-between; align-items:center; padding: 13px 16px; border-bottom: 1px solid var(--paper-line); cursor:pointer; }
-  .entry:last-child{ border-bottom:none; }
-  .entry:active{ background: var(--paper-line); }
-  .entry-editing{ display:block; padding: 14px 16px; cursor:default; }
-  .entry-editing:active{ background:none; }
-
-  .entry-main{ display:flex; align-items:center; gap:10px; }
-  .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .dot.sleep{ background: var(--sky); }
-  .dot.feed{ background: var(--gold); }
-  .dot.diaper{ background: var(--coral); }
-  .dot.bath{ background: var(--sage); }
-  .dot.medicine{ background: var(--clay); }
-
-  .entry-text{ font-size: 0.92rem; font-weight:600; }
-  .entry-detail{ font-size: 0.78rem; color: var(--ink-faint); margin-top: 1px; }
-  .entry-time{ font-size: 0.8rem; color: var(--ink-muted); white-space:nowrap; padding-left:10px; }
-  .entry-right{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
-  .entry-delete{ font-size: 0.7rem; padding:0; }
-
-  .empty{ padding: 20px 16px; text-align:center; color: var(--ink-faint); font-size: 0.86rem; }
-
-  .sync-note{ text-align:center; font-size: 0.75rem; color: var(--ink-faint); margin-top: 14px; }
-</style>
 </head>
 <body>
-<main>
 
-  <header class="hero">
-    <img src="hero.jpg" class="hero-img" alt="">
-    <div class="hero-caption">
-      <h1>Jujube</h1>
-      <div class="age" id="age"></div>
+<nav class="site-nav">
+  <a href="index.html" class="site-nav__mark">Baby is Figureoutable <span>&amp; His Village of Love</span></a>
+  <ul class="site-nav__links">
+    <li><a href="events.html">Events</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li><a href="wishes.html">Wishes</a></li>
+  </ul>
+</nav>
+
+<main class="wrap" style="max-width: 540px; padding-top: 24px;">
+
+  <header class="hero" style="text-align: center; margin-bottom: 24px;">
+    <div class="hero__inner">
+      <h1>Baby is Figureoutable</h1>
+      <div class="age-counter" id="age" style="margin-top: 8px;"></div>
     </div>
   </header>
 
-  <div class="panel" id="panelActions">
+  <div class="card" id="panelActions" style="margin-bottom: 24px;">
     <div class="row" id="rowSleep"></div>
     <div class="row" id="rowFeed"></div>
     <div class="row" id="rowDiaper"></div>
@@ -251,18 +47,18 @@
     <div class="row" id="rowMedicine"></div>
   </div>
 
-  <div class="panel">
-    <div class="summary-tabs">
-      <button class="tab-btn active" data-range="today">Today</button>
-      <button class="tab-btn" data-range="24h">Last 24h</button>
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="summary-tabs" style="display:flex; border-bottom: 1px solid var(--paper-line, #e3d9c4);">
+      <button class="tab-btn active" data-range="today" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Today</button>
+      <button class="tab-btn" data-range="24h" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Last 24h</button>
     </div>
     <div class="summary-body" id="summaryBody"></div>
   </div>
 
-  <div class="section-title">Recent</div>
-  <div class="panel" id="recentPanel"></div>
+  <h3 style="margin-bottom: 12px;">Recent</h3>
+  <div class="card" id="recentPanel"></div>
 
-  <div class="sync-note" id="syncNote"></div>
+  <div class="sync-note" id="syncNote" style="text-align:center; margin-top:16px; font-size:0.85rem; opacity:0.8;"></div>
 
 </main>
 
@@ -285,7 +81,7 @@
   var K_CACHE = 'jujube_recent_cache';
 
   // ---------- Transient UI state ----------
-  var editing = null; // { mode:'new'|'edit', type, activityKey, startMs, endMs, beginSide, endSide, leftMin, rightMin, diaperType, color, texture, size, note }
+  var editing = null; 
   var currentSummaryRange = 'today';
 
   // ---------- Helpers ----------
@@ -462,11 +258,11 @@
   }
 
   function formActions(mode, saveLabel, saveDisabled){
-    return '<div class="form-actions">' +
-      (mode === 'edit' ? '<button class="link-btn danger" data-action="delete-entry">Delete</button>' : '<span></span>') +
-      '<div class="form-actions-right">' +
-        '<button class="link-btn" data-action="cancel-edit">Cancel</button>' +
-        '<button class="btn btn-fill" data-action="save-entry"' + (saveDisabled ? ' disabled' : '') + '>' + (saveLabel||'Save') + '</button>' +
+    return '<div class="form-actions" style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">' +
+      (mode === 'edit' ? '<button class="btn btn--danger" data-action="delete-entry">Delete</button>' : '<span></span>') +
+      '<div class="form-actions-right" style="display:flex; gap:8px;">' +
+        '<button class="btn" data-action="cancel-edit">Cancel</button>' +
+        '<button class="btn btn--primary" data-action="save-entry"' + (saveDisabled ? ' disabled' : '') + '>' + (saveLabel||'Save') + '</button>' +
       '</div>' +
     '</div>';
   }
@@ -476,40 +272,41 @@
     var t = getTimers().Sleep;
 
     if (t){
-      el.className = 'row row-active row-active-sky';
+      el.className = 'row row-active';
       el.innerHTML =
-        '<div class="row-active-top">' +
+        '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
           '<div class="row-label">Sleep<span class="tag">running</span></div>' +
           '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="sleep-start">' +
         '</div>' +
-        '<div class="row-timer" id="sleepTimerText">' + formatElapsed((Date.now()-t.startedAt)/1000) + '</div>' +
-        '<div class="row-active-actions"><button class="btn btn-fill" data-action="stop-sleep">Stop</button></div>';
+        '<div class="row-timer" id="sleepTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.startedAt)/1000) + '</div>' +
+        '<div class="row-active-actions"><button class="btn btn--primary" data-action="stop-sleep">Stop</button></div>';
       return;
     }
 
     if (editing && editing.mode === 'new' && editing.type === 'Sleep'){
-      el.className = 'row row-active row-active-sky';
+      el.className = 'row row-active';
       el.innerHTML = renderSleepForm(editing);
       return;
     }
 
     el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     el.innerHTML =
-      '<div><div class="row-label">Sleep</div><div class="row-hint">Tap to start timing</div></div>' +
-      '<div class="row-actions-col">' +
-        '<button class="chip chip-primary" data-action="start-sleep">Start</button>' +
-        '<button class="link-btn" data-action="open-new" data-type="Sleep">log manually</button>' +
+      '<div><div class="row-label" style="font-weight:600;">Sleep</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to start timing</div></div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<button class="btn btn--primary" data-action="start-sleep">Start</button>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Sleep">log manually</button>' +
       '</div>';
   }
 
   function renderSleepForm(d){
     return (
-      '<div class="row-label">Sleep' + formTag(d) + '</div>' +
-      '<div class="form-grid">' +
-        '<div class="form-field"><div class="form-label">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-        '<div class="form-field"><div class="form-label">End</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
+      '<div class="row-label" style="font-weight:600;">Sleep' + formTag(d) + '</div>' +
+      '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">End</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' +
       '</div>' +
-      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
       formActions(d.mode)
     );
   }
@@ -527,78 +324,79 @@
 
     if (t){
       var other = t.currentSide === 'LEFT' ? 'RIGHT' : 'LEFT';
-      el.className = 'row row-active row-active-gold';
+      el.className = 'row row-active';
       el.innerHTML =
-        '<div class="row-active-top">' +
+        '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
           '<div class="row-label">Breastfeed<span class="tag">' + t.currentSide.toLowerCase() + '</span></div>' +
           '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="feed-start">' +
         '</div>' +
-        '<div class="row-timer" id="feedTimerText">' + formatElapsed((Date.now()-t.currentSideStart)/1000) + '</div>' +
-        '<div class="row-sub" id="feedSubText">' + feedSubLabel(t) + '</div>' +
-        '<div class="row-active-actions">' +
-          '<button class="btn btn-outline" data-action="switch-side" data-side="' + other + '">Switch to ' + other.toLowerCase() + '</button>' +
-          '<button class="btn btn-fill" data-action="stop-feed">Stop</button>' +
+        '<div class="row-timer" id="feedTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.currentSideStart)/1000) + '</div>' +
+        '<div class="row-sub" id="feedSubText" style="font-size:0.85rem; opacity:0.8; margin-bottom:8px;">' + feedSubLabel(t) + '</div>' +
+        '<div class="row-active-actions" style="display:flex; gap:8px;">' +
+          '<button class="btn" data-action="switch-side" data-side="' + other + '">Switch to ' + other.toLowerCase() + '</button>' +
+          '<button class="btn btn--primary" data-action="stop-feed">Stop</button>' +
         '</div>';
       return;
     }
 
     if (editing && editing.mode === 'new' && editing.type === 'Breastfeed'){
-      el.className = 'row row-active row-active-gold';
+      el.className = 'row row-active';
       el.innerHTML = renderFeedForm(editing);
       return;
     }
 
     el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     var lastSide = getLastFeedSide();
     el.innerHTML =
-      '<div><div class="row-label">Breastfeed</div><div class="row-hint">' + (lastSide ? 'Last was ' + lastSide.toLowerCase() : 'Choose a side') + '</div></div>' +
-      '<div class="row-actions-col">' +
-        '<div class="row-actions">' +
-          '<button class="chip' + (lastSide==='RIGHT'?' chip-suggested':'') + '" data-action="start-feed" data-side="LEFT">Left</button>' +
-          '<button class="chip' + (lastSide==='LEFT'?' chip-suggested':'') + '" data-action="start-feed" data-side="RIGHT">Right</button>' +
+      '<div><div class="row-label" style="font-weight:600;">Breastfeed</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">' + (lastSide ? 'Last was ' + lastSide.toLowerCase() : 'Choose a side') + '</div></div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<div class="row-actions" style="display:flex; gap:6px;">' +
+          '<button class="btn' + (lastSide==='RIGHT'?' btn--gold':'') + '" data-action="start-feed" data-side="LEFT">Left</button>' +
+          '<button class="btn' + (lastSide==='LEFT'?' btn--gold':'') + '" data-action="start-feed" data-side="RIGHT">Right</button>' +
         '</div>' +
-        '<button class="link-btn" data-action="open-new" data-type="Breastfeed">log manually</button>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Breastfeed">log manually</button>' +
       '</div>';
   }
 
   function sideChip(field, value, d, label){
     var selected = d[field] === value;
-    return '<button class="chip chip-select' + (selected?' selected':'') + '" data-side-field="' + field + '" data-side-value="' + value + '">' + label + '</button>';
+    return '<button class="btn' + (selected?' btn--primary':'') + '" data-side-field="' + field + '" data-side-value="' + value + '">' + label + '</button>';
   }
 
   function renderFeedForm(d){
     return (
-      '<div class="row-label">Breastfeed' + formTag(d) + '</div>' +
-      '<div class="form-field"><div class="form-label">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      '<div class="attr-group"><div class="attr-title">Began on</div><div class="chip-row">' + sideChip('beginSide','LEFT',d,'Left') + sideChip('beginSide','RIGHT',d,'Right') + '</div></div>' +
-      '<div class="attr-group"><div class="attr-title">Ended on</div><div class="chip-row">' + sideChip('endSide','LEFT',d,'Left') + sideChip('endSide','RIGHT',d,'Right') + '</div></div>' +
-      '<div class="form-grid">' +
-        '<div class="form-field"><div class="form-label">Left (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" value="' + d.leftMin + '" data-edit="leftMin"></div>' +
-        '<div class="form-field"><div class="form-label">Right (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" value="' + d.rightMin + '" data-edit="rightMin"></div>' +
+      '<div class="row-label" style="font-weight:600;">Breastfeed' + formTag(d) + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Start</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">Began on</div><div class="chip-row" style="display:flex; gap:6px;">' + sideChip('beginSide','LEFT',d,'Left') + sideChip('beginSide','RIGHT',d,'Right') + '</div></div>' +
+      '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">Ended on</div><div class="chip-row" style="display:flex; gap:6px;">' + sideChip('endSide','LEFT',d,'Left') + sideChip('endSide','RIGHT',d,'Right') + '</div></div>' +
+      '<div class="form-grid" style="display:flex; gap:8px; margin:8px 0;">' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Left (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.leftMin + '" data-edit="leftMin"></div>' +
+        '<div class="form-field" style="flex:1;"><div class="form-label" style="font-size:0.8rem;">Right (min)</div><input type="number" min="0" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.rightMin + '" data-edit="rightMin"></div>' +
       '</div>' +
-      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
       formActions(d.mode)
     );
   }
 
   function attrGroup(title, group, options, d){
-    return '<div class="attr-group"><div class="attr-title">' + title + '</div><div class="chip-row">' +
+    return '<div class="attr-group" style="margin:8px 0;"><div class="attr-title" style="font-size:0.8rem;">' + title + '</div><div class="chip-row" style="display:flex; flex-wrap:wrap; gap:6px;">' +
       options.map(function(opt){
         var selected = d[group] === opt;
-        return '<button class="chip chip-select' + (selected?' selected':'') + '" data-group="' + group + '" data-value="' + opt + '">' + opt + '</button>';
+        return '<button class="btn' + (selected?' btn--primary':'') + '" data-group="' + group + '" data-value="' + opt + '">' + opt + '</button>';
       }).join('') +
     '</div></div>';
   }
 
   function renderDiaperForm(d){
     return (
-      '<div class="row-label">Diaper' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
-      '<div class="form-field"><div class="form-label">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="row-label" style="font-weight:600;">Diaper' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
       attrGroup('Type','diaperType',['Wet','Dirty','Dirty Wet'], d) +
       attrGroup('Color','color',['Yellow','Green','Brown','Black','Red'], d) +
       attrGroup('Texture','texture',['Seedy','Mushy','Runny','Watery','Hard'], d) +
       attrGroup('Size','size',['Small','Medium','Large'], d) +
-      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
       formActions(d.mode, 'Log', !d.diaperType)
     );
   }
@@ -615,21 +413,22 @@
   function renderDiaperRow(){
     var el = document.getElementById('rowDiaper');
     if (editing && editing.mode === 'new' && editing.type === 'Diaper'){
-      el.className = 'row row-active row-active-coral';
+      el.className = 'row row-active';
       el.innerHTML = renderDiaperForm(editing);
       return;
     }
     el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     el.innerHTML =
-      '<div><div class="row-label">Diaper</div><div class="row-hint">Tap to log</div></div>' +
-      '<button class="chip chip-ghost" data-action="open-new" data-type="Diaper">\uFF0B</button>';
+      '<div><div class="row-label" style="font-weight:600;">Diaper</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to log</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="Diaper">\uFF0B Log</button>';
   }
 
   function renderBathForm(d){
     return (
-      '<div class="row-label">Bath' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
-      '<div class="form-field"><div class="form-label">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      '<div class="row-label" style="font-weight:600;">Bath' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
       formActions(d.mode)
     );
   }
@@ -637,14 +436,15 @@
   function renderBathRow(){
     var el = document.getElementById('rowBath');
     if (editing && editing.mode === 'new' && editing.type === 'Bath'){
-      el.className = 'row row-active row-active-sage';
+      el.className = 'row row-active';
       el.innerHTML = renderBathForm(editing);
       return;
     }
     el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     el.innerHTML =
-      '<div><div class="row-label">Bath</div><div class="row-hint">Tap to log</div></div>' +
-      '<button class="chip chip-ghost" data-action="open-new" data-type="Bath">\uFF0B</button>';
+      '<div><div class="row-label" style="font-weight:600;">Bath</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to log</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="Bath">\uFF0B Log</button>';
   }
 
   // ---------- Medicine ----------
@@ -671,13 +471,13 @@
 
   function renderMedConfigForm(d){
     return (
-      '<div class="row-label">Medicine setup</div>' +
-      '<div class="form-field full"><div class="form-label">Medication</div><input type="text" class="note-input" placeholder="e.g. Tylenol" value="' + escapeHtml(d.name||'') + '" data-edit="name"></div>' +
-      '<div class="form-field"><div class="form-label">Every (hours)</div><input type="number" min="1" inputmode="numeric" class="note-input" value="' + d.intervalHours + '" data-edit="intervalHours"></div>' +
-      '<div class="form-actions"><span></span><div class="form-actions-right">' +
-        '<button class="link-btn" data-action="cancel-edit">Cancel</button>' +
-        '<button class="btn btn-fill" data-action="save-med-config">Save</button>' +
-      '</div></div>'
+      '<div class="row-label" style="font-weight:600;">Medicine setup</div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Medication</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="e.g. Tylenol" value="' + escapeHtml(d.name||'') + '" data-edit="name"></div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Every (hours)</div><input type="number" min="1" inputmode="numeric" class="note-input" style="width:100%; padding:6px;" value="' + d.intervalHours + '" data-edit="intervalHours"></div>' +
+      '<div class="form-actions" style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">' +
+        '<button class="btn" data-action="cancel-edit">Cancel</button>' +
+        '<button class="btn btn--primary" data-action="save-med-config">Save</button>' +
+      '</div>'
     );
   }
 
@@ -685,10 +485,10 @@
     var med = getCurrentMed();
     var medName = (d.mode === 'edit') ? d.medName : (med ? med.name : '');
     return (
-      '<div class="row-label">Medicine' + formTag(d) + '</div>' +
-      '<div class="row-hint" style="margin-bottom:8px">' + escapeHtml(medName || 'No medication set') + '</div>' +
-      '<div class="form-field"><div class="form-label">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
-      '<div class="form-field full"><div class="form-label">Note</div><input type="text" class="note-input" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+      '<div class="row-label" style="font-weight:600;">Medicine' + formTag(d) + '</div>' +
+      '<div class="row-hint" style="margin-bottom:8px; font-size:0.85rem; opacity:0.8;">' + escapeHtml(medName || 'No medication set') + '</div>' +
+      '<div class="form-field"><div class="form-label" style="font-size:0.8rem;">Time</div><input type="datetime-local" class="time-input" style="width:100%" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+      '<div class="form-field full"><div class="form-label" style="font-size:0.8rem;">Note</div><input type="text" class="note-input" style="width:100%; padding:6px;" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
       formActions(d.mode)
     );
   }
@@ -698,32 +498,33 @@
     var med = getCurrentMed();
 
     if (editing && editing.type === 'Medicine' && editing.mode === 'config'){
-      el.className = 'row row-active row-active-clay';
+      el.className = 'row row-active';
       el.innerHTML = renderMedConfigForm(editing);
       return;
     }
     if (editing && editing.mode === 'new' && editing.type === 'Medicine'){
-      el.className = 'row row-active row-active-clay';
+      el.className = 'row row-active';
       el.innerHTML = renderMedicineForm(editing);
       return;
     }
 
     el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0;';
     if (!med || !med.name){
       el.innerHTML =
-        '<div><div class="row-label">Medicine</div><div class="row-hint">Set up a medication to track doses</div></div>' +
-        '<button class="link-btn" data-action="open-med-config">set up</button>';
+        '<div><div class="row-label" style="font-weight:600;">Medicine</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Set up a medication to track doses</div></div>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-med-config">set up</button>';
       return;
     }
 
     el.innerHTML =
-      '<div><div class="row-label">Medicine</div>' +
-        '<div class="row-hint">' + escapeHtml(med.name) + ', every ' + med.intervalHours + 'h</div>' +
-        '<div class="row-hint" id="doseStatusText">' + doseStatusText(med, getLastDose()) + '</div>' +
+      '<div><div class="row-label" style="font-weight:600;">Medicine</div>' +
+        '<div class="row-hint" style="font-size:0.85rem; opacity:0.7;">' + escapeHtml(med.name) + ', every ' + med.intervalHours + 'h</div>' +
+        '<div class="row-hint" id="doseStatusText" style="font-size:0.85rem; opacity:0.8;">' + doseStatusText(med, getLastDose()) + '</div>' +
       '</div>' +
-      '<div class="row-actions-col">' +
-        '<button class="chip chip-primary" data-action="open-new" data-type="Medicine">Log dose</button>' +
-        '<button class="link-btn" data-action="open-med-config">change</button>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<button class="btn btn--primary" data-action="open-new" data-type="Medicine">Log dose</button>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-med-config">change</button>' +
       '</div>';
   }
 
@@ -738,25 +539,25 @@
   function renderRecent(){
     var cache = getCache();
     var panel = document.getElementById('recentPanel');
-    if (cache.length === 0){ panel.innerHTML = '<div class="empty">Nothing logged yet.</div>'; return; }
+    if (cache.length === 0){ panel.innerHTML = '<div style="padding:16px; text-align:center; opacity:0.7;">Nothing logged yet.</div>'; return; }
     panel.innerHTML = cache.map(entryRowHtml).join('');
   }
 
   function entryRowHtml(e){
     var key = e['_activityKey'];
     if (editing && editing.mode === 'edit' && editing.activityKey === key){
-      return '<div class="entry-editing">' + renderEntryForm(editing) + '</div>';
+      return '<div class="entry-editing" style="padding:12px 0;">' + renderEntryForm(editing) + '</div>';
     }
 
     var type = e['Type'];
-    var dotClass = 'diaper', text = type, detail = '';
+    var text = type, detail = '';
     var startMs = Number(e['Start Date/time (Epoch)']) || Date.parse(e['Start Date/time']);
 
     if (type === 'Sleep'){
-      dotClass = 'sleep'; text = 'Sleep';
+      text = 'Sleep';
       detail = formatDuration(Number(e['[Sleep] Duration (Seconds)'])||0);
     } else if (type === 'Breastfeed'){
-      dotClass = 'feed'; text = 'Breastfeed';
+      text = 'Breastfeed';
       var l = Number(e['[Breastfeed] Left Duration (Seconds)'])||0;
       var r = Number(e['[Breastfeed] Right Duration (Seconds)'])||0;
       var parts = [];
@@ -764,33 +565,33 @@
       if (r) parts.push('R ' + formatDuration(r));
       detail = parts.join(' \u00b7 ');
     } else if (type === 'Diaper'){
-      dotClass = 'diaper'; text = 'Diaper';
+      text = 'Diaper';
       detail = e['[Diaper] Type'] || '';
     } else if (type === 'Routine' && e['[Routine] Routine'] === 'Bath'){
-      dotClass = 'bath'; text = 'Bath';
+      text = 'Bath';
     } else if (type === 'Medical'){
-      dotClass = 'medicine'; text = 'Medicine';
+      text = 'Medicine';
       detail = e['[Medical] Medication'] || '';
     }
     if (e['Note']) detail = detail ? detail + ' \u00b7 ' + e['Note'] : e['Note'];
 
-    return '<div class="entry" data-key="' + key + '">' +
-      '<div class="entry-main"><span class="dot ' + dotClass + '"></span>' +
-      '<div><div class="entry-text">' + text + '</div>' +
-      (detail ? '<div class="entry-detail">' + escapeHtml(detail) + '</div>' : '') +
+    return '<div class="entry" data-key="' + key + '" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4); cursor:pointer;">' +
+      '<div class="entry-main">' +
+      '<div><div class="entry-text" style="font-weight:600;">' + text + '</div>' +
+      (detail ? '<div class="entry-detail" style="font-size:0.85rem; opacity:0.7;">' + escapeHtml(detail) + '</div>' : '') +
       '</div></div>' +
-      '<div class="entry-right">' +
-        '<div class="entry-time">' + formatRelative(startMs) + '</div>' +
-        '<button class="link-btn danger entry-delete" data-action="quick-delete" data-key="' + key + '">delete</button>' +
+      '<div class="entry-right" style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">' +
+        '<div class="entry-time" style="font-size:0.8rem; opacity:0.8;">' + formatRelative(startMs) + '</div>' +
+        '<button class="btn" style="font-size:0.75rem; color:var(--coral, #c97a52); border:none; background:none; padding:0;" data-action="quick-delete" data-key="' + key + '">delete</button>' +
       '</div>' +
     '</div>';
   }
 
   // ---------- Rendering: summary ----------
-  function summaryLine(dotClass, label, count, detail){
-    return '<div class="summary-row"><div class="entry-main"><span class="dot ' + dotClass + '"></span>' +
-      '<div><div class="entry-text">' + label + '<span class="tag">' + count + '</span></div>' +
-      (detail ? '<div class="entry-detail">' + detail + '</div>' : '') + '</div></div></div>';
+  function summaryLine(label, count, detail){
+    return '<div class="summary-row" style="display:flex; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--paper-line, #e3d9c4);">' +
+      '<div class="entry-main"><div><div class="entry-text" style="font-weight:600;">' + label + ' <span style="font-size:0.8rem; opacity:0.8;">(' + count + ')</span></div>' +
+      (detail ? '<div class="entry-detail" style="font-size:0.85rem; opacity:0.7;">' + detail + '</div>' : '') + '</div></div></div>';
   }
 
   function renderSummary(summary){
@@ -798,16 +599,16 @@
     var bathCount = (summary && summary.bath) ? summary.bath.count : 0;
     var medCount = (summary && summary.medical) ? summary.medical.count : 0;
     if (!summary || (summary.sleep.count===0 && summary.breastfeed.count===0 && summary.diaper.count===0 && bathCount===0 && medCount===0)){
-      el.innerHTML = '<div class="empty">Nothing logged in this window yet.</div>';
+      el.innerHTML = '<div style="padding:16px; text-align:center; opacity:0.7;">Nothing logged in this window yet.</div>';
       return;
     }
     var rows = [];
-    if (summary.sleep.count>0) rows.push(summaryLine('sleep','Sleep', summary.sleep.count, formatDuration(summary.sleep.totalSeconds) + ' total'));
-    if (summary.breastfeed.count>0) rows.push(summaryLine('feed','Breastfeed', summary.breastfeed.count,
+    if (summary.sleep.count>0) rows.push(summaryLine('Sleep', summary.sleep.count, formatDuration(summary.sleep.totalSeconds) + ' total'));
+    if (summary.breastfeed.count>0) rows.push(summaryLine('Breastfeed', summary.breastfeed.count,
       formatDuration(summary.breastfeed.totalSeconds) + ' total \u00b7 L ' + formatDuration(summary.breastfeed.leftSeconds) + ' \u00b7 R ' + formatDuration(summary.breastfeed.rightSeconds)));
-    if (summary.diaper.count>0) rows.push(summaryLine('diaper','Diaper', summary.diaper.count, summary.diaper.wet + ' wet \u00b7 ' + summary.diaper.dirty + ' dirty'));
-    if (bathCount>0) rows.push(summaryLine('bath','Bath', bathCount, ''));
-    if (medCount>0) rows.push(summaryLine('medicine','Medicine', medCount, ''));
+    if (summary.diaper.count>0) rows.push(summaryLine('Diaper', summary.diaper.count, summary.diaper.wet + ' wet \u00b7 ' + summary.diaper.dirty + ' dirty'));
+    if (bathCount>0) rows.push(summaryLine('Bath', bathCount, ''));
+    if (medCount>0) rows.push(summaryLine('Medicine', medCount, ''));
     el.innerHTML = rows.join('');
   }
 
@@ -994,7 +795,7 @@
     renderRows(); renderRecent(); fetchSummary();
   }
 
-  // ---------- Ticking (running timers only touch text nodes) ----------
+  // ---------- Ticking ----------
   function tickSleep(){
     var t = getTimers().Sleep;
     var el = document.getElementById('sleepTimerText');
