@@ -3,7 +3,7 @@
 A small, plain-HTML site meant to live on GitHub Pages forever. No build step, no dependencies — just HTML, CSS, and a little JS.
 
 Live at: [https://alicezheng-ai.github.io/little-sai-village/](https://alicezheng-ai.github.io/little-sai-village/)
-Quicklink to the [<a href="https://alicezheng-ai.github.io/little-sai-village/nanny">Nanny Guide</a>]
+Quicklink to the <a href="https://alicezheng-ai.github.io/little-sai-village/nanny">Nanny Guide</a> and <a href="https://alicezheng-ai.github.io/little-sai-village/tools/baby-tracker/">Baby Tracker</a>.
 
 ## Publish updates
 
