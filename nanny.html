@@ -121,6 +121,15 @@
   #taskStatus { font-size: 0.82rem; color: var(--pine-deep); min-height: 1.2em; }
   #resetTasks { background: none; border: none; color: var(--rose-deep); font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 4px 0; }
   #resetTasks:hover { text-decoration: underline; }
+
+  /* The shared .hero__inner centers everything, which turns multi-line
+     prose into a ragged triangle. Keep the title and age badge centered,
+     but read the paragraphs left-to-right like normal text. */
+  .hero .lede {
+    text-align: left;
+    margin-left: auto;
+    margin-right: auto;
+  }
 </style>
 </head>
 <body>
@@ -153,8 +162,7 @@
   <a href="#feeding">Feeding</a> <span class="sep">&middot;</span>
   <a href="#diapers">Diapers</a> <span class="sep">&middot;</span>
   <a href="#sleep">Sleep</a> <span class="sep">&middot;</span>
-  <a href="#tasks">Tasks</a> <span class="sep">&middot;</span>
-  <a href="#log">Log</a>
+  <a href="#tasks">Tasks</a>
 </nav>
 
 <section class="band" id="parking">
@@ -178,7 +186,9 @@
         <li>The house has three floors. Baby Sai's changing station and dresser are upstairs in the nursery, and the laundry machine is also upstairs. His bassinet is in the master bedroom, across the hallway from the nursery.</li>
         <li>The guest bathroom on the bottom floor is yours to use.</li>
         <li>Snacks and drinks on the counter and in the fridge are yours too — help yourself any time.</li>
+        <li>Log diaper changes and naps in the tracker as you go.</li>
       </ul>
+      <a class="btn btn--gold" href="https://alicezheng-ai.github.io/little-sai-village/tools/baby-tracker/" target="_blank" rel="noopener" style="margin-top:10px;">Open the log</a>
     </div>
   </div>
 </section>
@@ -293,16 +303,6 @@
         <span id="taskStatus" role="status">Loading…</span>
         <button type="button" class="btn btn--pine" id="saveTasks">Save &amp; sync tasks</button>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="band" id="log">
-  <div class="wrap">
-    <div class="section-head"><h2>Log diapers &amp; naps</h2></div>
-    <div class="card">
-      <p>Use the tracker to log diaper changes and naps during your shift.</p>
-      <a class="btn btn--gold" href="https://alicezheng-ai.github.io/little-sai-village/tools/baby-tracker/" target="_blank" rel="noopener">Open the log</a>
     </div>
   </div>
 </section>
