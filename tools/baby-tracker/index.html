@@ -116,6 +116,44 @@
     display: flex;
     gap: 8px;
   }
+
+  /* Running timers and forms must stack vertically. The shared .row class
+     lays its children out in a horizontal flex row, and the idle state also
+     sets an inline display:flex that survived into the active state, so the
+     timer and the Wake Up / Stop button were pushed off the right edge. */
+  .row.row-active {
+    display: block !important;
+  }
+  .row-active-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .row-active .time-input {
+    max-width: 100%;
+  }
+  .row-active-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .row-timer {
+    max-width: 100%;
+  }
+
+  /* The shared .hero class is sized for the homepage's big photo hero; this
+     page only has a title and an age pill. */
+  header.hero,
+  header.hero .hero__inner {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 0 !important;
+  }
+  header.hero {
+    margin-top: 0 !important;
+  }
+  header.hero h1 {
+    margin-top: 0;
+  }
 </style>
 
 </head>
