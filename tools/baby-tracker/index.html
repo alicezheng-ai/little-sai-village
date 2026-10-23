@@ -19,6 +19,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../css/style.css">
 
+<!-- Chart.js CDN for Growth Percentile Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
   /* Form Layout Polish & Safety Overflow Guards */
   .row-active {
@@ -27,6 +30,9 @@
     padding: 16px !important;
     margin: 8px 0;
     box-shadow: inset 0 0 0 1px var(--paper-line, #e3d9c4);
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
   }
 
   .form-card {
@@ -35,13 +41,23 @@
     gap: 12px;
     width: 100%;
     box-sizing: border-box;
+    min-width: 0;
   }
 
   .form-row-2col {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
     width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-row-3col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .form-group {
@@ -50,6 +66,7 @@
     gap: 4px;
     width: 100%;
     box-sizing: border-box;
+    min-width: 0;
   }
 
   .form-group label {
@@ -60,13 +77,14 @@
 
   .form-control {
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     padding: 8px 10px;
     border: 1px solid var(--paper-line, #d4c8b3);
     border-radius: 8px;
     background: #fff;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .chip-group {
@@ -110,6 +128,8 @@
     margin-top: 8px;
     padding-top: 8px;
     border-top: 1px solid rgba(0,0,0,0.06);
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .actions-right {
@@ -117,42 +137,103 @@
     gap: 8px;
   }
 
-  /* Running timers and forms must stack vertically. The shared .row class
-     lays its children out in a horizontal flex row, and the idle state also
-     sets an inline display:flex that survived into the active state, so the
-     timer and the Wake Up / Stop button were pushed off the right edge. */
   .row.row-active {
     display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
+
   .row-active-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
     gap: 8px;
+    width: 100%;
   }
+
   .row-active .time-input {
     max-width: 100%;
+    box-sizing: border-box;
   }
+
   .row-active-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
   }
+
   .row-timer {
     max-width: 100%;
+    word-break: break-word;
   }
 
-  /* The shared .hero class is sized for the homepage's big photo hero; this
-     page only has a title and an age pill. */
   header.hero,
   header.hero .hero__inner {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     min-height: 0 !important;
   }
+
   header.hero {
     margin-top: 0 !important;
   }
+
   header.hero h1 {
     margin-top: 0;
+  }
+
+  /* Growth Chart Modal Styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 33, 28, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open {
+    display: flex;
+  }
+  .modal-card {
+    background: #fffdf9;
+    border-radius: 18px;
+    max-width: 500px;
+    width: 100%;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: var(--ink-soft, #6b5e52);
+  }
+  .chart-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 </style>
 
@@ -182,6 +263,7 @@
     <div class="row" id="rowFeed"></div>
     <div class="row" id="rowBottle"></div>
     <div class="row" id="rowDiaper"></div>
+    <div class="row" id="rowGrowth"></div>
     <div class="row" id="rowBath"></div>
     <div class="row" id="rowMedicine"></div>
   </div>
@@ -200,6 +282,29 @@
   <div class="sync-note" id="syncNote" style="text-align:center; margin-top:16px; font-size:0.85rem; opacity:0.8;"></div>
 
 </main>
+
+<!-- Growth Percentile Modal -->
+<div class="modal-overlay" id="growthModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>WHO Boys Growth Chart</h3>
+      <button class="close-btn" id="closeGrowthModal">&times;</button>
+    </div>
+    <div class="chart-controls">
+      <div class="chip-group">
+        <button class="chip-btn active" id="btnMetricImperial" data-unit="imperial">Imperial (lbs/in)</button>
+        <button class="chip-btn" id="btnMetricMetric" data-unit="metric">Metric (kg/cm)</button>
+      </div>
+      <div class="chip-group">
+        <button class="chip-btn active" id="btnMetricWeight">Weight</button>
+        <button class="chip-btn" id="btnMetricHeight">Height</button>
+      </div>
+    </div>
+    <div style="position: relative; height: 260px; width: 100%;">
+      <canvas id="growthChartCanvas"></canvas>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -222,6 +327,43 @@
   // ---------- Transient UI state ----------
   var editing = null; 
   var currentSummaryRange = 'today';
+  var growthChartInstance = null;
+  var currentChartUnit = 'imperial'; // 'imperial' or 'metric'
+  var currentChartMetric = 'weight'; // 'weight' or 'height'
+
+  // WHO Growth Standard Data Points (Boys 0 - 12 Months)
+  // [Month, 5th, 50th, 95th Percentiles]
+  var WHO_BOYS_WEIGHT_KG = [
+    [0, 2.5, 3.3, 4.3],
+    [1, 3.4, 4.5, 5.8],
+    [2, 4.3, 5.6, 7.1],
+    [3, 5.0, 6.4, 8.0],
+    [4, 5.6, 7.0, 8.7],
+    [5, 6.1, 7.5, 9.3],
+    [6, 6.4, 7.9, 9.8],
+    [7, 6.7, 8.3, 10.3],
+    [8, 6.9, 8.6, 10.7],
+    [9, 7.1, 8.9, 11.0],
+    [10, 7.4, 9.2, 11.4],
+    [11, 7.6, 9.4, 11.7],
+    [12, 7.8, 9.6, 12.0]
+  ];
+
+  var WHO_BOYS_HEIGHT_CM = [
+    [0, 46.1, 49.9, 53.7],
+    [1, 50.8, 54.7, 58.6],
+    [2, 54.4, 58.4, 62.4],
+    [3, 57.3, 61.4, 65.5],
+    [4, 59.7, 63.9, 68.0],
+    [5, 61.7, 65.9, 70.1],
+    [6, 63.3, 67.6, 71.9],
+    [7, 64.8, 69.1, 73.5],
+    [8, 66.2, 70.6, 75.0],
+    [9, 67.5, 72.0, 76.5],
+    [10, 68.7, 73.3, 77.9],
+    [11, 69.9, 74.5, 79.2],
+    [12, 71.0, 75.7, 80.5]
+  ];
 
   // ---------- Helpers ----------
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
@@ -296,6 +438,12 @@
     }
     if (months <= 0) return days + (days === 1 ? ' day old' : ' days old');
     return months + ' mo ' + days + 'd';
+  }
+
+  function getAgeInMonths(ms){
+    var birth = new Date(CONFIG.BIRTH_DATE + 'T00:00:00').getTime();
+    var diffDays = (ms - birth) / (1000 * 3600 * 24);
+    return Math.max(0, parseFloat((diffDays / 30.4375).toFixed(2)));
   }
 
   function uid(){
@@ -398,7 +546,7 @@
   }
 
   // ---------- Rendering: rows ----------
-  function renderRows(){ renderSleepRow(); renderFeedRow(); renderBottleRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); }
+  function renderRows(){ renderSleepRow(); renderFeedRow(); renderBottleRow(); renderDiaperRow(); renderGrowthRow(); renderBathRow(); renderMedicineRow(); }
 
   function formTag(d){
     if (d.mode === 'edit') return '<span class="tag-badge">edit</span>';
@@ -600,11 +748,47 @@
     );
   }
 
+  // ---------- Growth / Measurements ----------
+  function renderGrowthRow(){
+    var el = document.getElementById('rowGrowth');
+    if (editing && editing.mode === 'new' && editing.type === 'Growth'){
+      el.className = 'row row-active';
+      el.innerHTML = renderGrowthForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Growth / Temp</div>' +
+      '<div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Weight, Height, Temperature</div>' +
+      '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline; padding:0; margin-top:2px; color:var(--rose-deep,#a35252);" id="openGrowthChartBtn">\u263A View Growth Chart</button>' +
+      '</div>' +
+      '<button class="btn" data-action="open-new" data-type="Growth">\uFF0B Log</button>';
+  }
+
+  function renderGrowthForm(d){
+    var hasAtLeastOne = (d.weightLbs || d.heightIn || d.tempF);
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Growth / Temp ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-row-3col">' +
+          '<div class="form-group"><label>Weight (lbs)</label><input type="number" step="0.1" min="0" inputmode="decimal" class="form-control" placeholder="e.g. 14.5" value="' + (d.weightLbs||'') + '" data-edit="weightLbs"></div>' +
+          '<div class="form-group"><label>Height (in)</label><input type="number" step="0.25" min="0" inputmode="decimal" class="form-control" placeholder="e.g. 24.5" value="' + (d.heightIn||'') + '" data-edit="heightIn"></div>' +
+          '<div class="form-group"><label>Temp (\u00b0F)</label><input type="number" step="0.1" min="90" max="110" inputmode="decimal" class="form-control" placeholder="e.g. 98.6" value="' + (d.tempF||'') + '" data-edit="tempF"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, 'Log', !hasAtLeastOne) +
+      '</div>'
+    );
+  }
+
   function renderEntryForm(d){
     if (d.type === 'Sleep') return renderSleepForm(d);
     if (d.type === 'Breastfeed') return renderFeedForm(d);
     if (d.type === 'Bottlefeed') return renderBottleForm(d);
     if (d.type === 'Diaper') return renderDiaperForm(d);
+    if (d.type === 'Growth') return renderGrowthForm(d);
     if (d.type === 'Bath') return renderBathForm(d);
     if (d.type === 'Medicine') return renderMedicineForm(d);
     return '';
@@ -656,7 +840,7 @@
   function getLastDose(){
     var cache = getCache();
     for (var i=0;i<cache.length;i++){
-      if (cache[i]['Type'] === 'Medical'){
+      if (cache[i]['Type'] === 'Medical' && cache[i]['[Medical] Medication']){
         return Number(cache[i]['Start Date/time (Epoch)']) || Date.parse(cache[i]['Start Date/time']);
       }
     }
@@ -784,11 +968,24 @@
     } else if (type === 'Diaper'){
       text = 'Diaper';
       detail = e['[Diaper] Type'] || '';
+    } else if (type === 'Growth'){
+      text = 'Growth / Temp';
+      var gParts = [];
+      if (e['[Growth] Weight']) {
+        var w = parseFloat(e['[Growth] Weight']);
+        gParts.push(w + ' lbs (' + (w * 0.453592).toFixed(2) + ' kg)');
+      }
+      if (e['[Growth] Height']) {
+        var h = parseFloat(e['[Growth] Height']);
+        gParts.push(h + ' in (' + (h * 2.54).toFixed(1) + ' cm)');
+      }
+      if (e['[Medical] Temperature']) gParts.push(e['[Medical] Temperature'] + '\u00b0F');
+      detail = gParts.join(' \u00b7 ');
     } else if (type === 'Routine' && e['[Routine] Routine'] === 'Bath'){
       text = 'Bath';
     } else if (type === 'Medical'){
       text = 'Medicine';
-      detail = e['[Medical] Medication'] || '';
+      detail = e['[Medical] Medication'] || (e['[Medical] Temperature'] ? e['[Medical] Temperature'] + '\u00b0F' : '');
     }
     if (e['Note']) detail = detail ? detail + ' \u00b7 ' + e['Note'] : e['Note'];
 
@@ -829,6 +1026,113 @@
     el.innerHTML = rows.join('');
   }
 
+  // ---------- Growth Chart Modal & Rendering ----------
+  function renderGrowthChart(){
+    var ctx = document.getElementById('growthChartCanvas').getContext('2d');
+    var isMetric = currentChartUnit === 'metric';
+    var isWeight = currentChartMetric === 'weight';
+
+    var rawWHO = isWeight ? WHO_BOYS_WEIGHT_KG : WHO_BOYS_HEIGHT_CM;
+    
+    // Transform WHO reference lines based on selected Unit
+    var p5 = [], p50 = [], p95 = [];
+    rawWHO.forEach(function(row){
+      var month = row[0];
+      var v5 = row[1], v50 = row[2], v95 = row[3];
+      if (!isMetric) {
+        if (isWeight) { v5 *= 2.20462; v50 *= 2.20462; v95 *= 2.20462; } // kg -> lbs
+        else { v5 /= 2.54; v50 /= 2.54; v95 /= 2.54; } // cm -> in
+      }
+      p5.push({x: month, y: parseFloat(v5.toFixed(1))});
+      p50.push({x: month, y: parseFloat(v50.toFixed(1))});
+      p95.push({x: month, y: parseFloat(v95.toFixed(1))});
+    });
+
+    // Extract user growth entries from cache
+    var userPoints = [];
+    var cache = getCache();
+    cache.forEach(function(e){
+      if (e['Type'] === 'Growth') {
+        var startMs = Number(e['Start Date/time (Epoch)']) || Date.parse(e['Start Date/time']);
+        var ageM = getAgeInMonths(startMs);
+        var val = null;
+        if (isWeight && e['[Growth] Weight']) {
+          val = parseFloat(e['[Growth] Weight']);
+          if (isMetric) val *= 0.453592; // lbs -> kg
+        } else if (!isWeight && e['[Growth] Height']) {
+          val = parseFloat(e['[Growth] Height']);
+          if (isMetric) val *= 2.54; // in -> cm
+        }
+        if (val !== null) userPoints.push({x: ageM, y: parseFloat(val.toFixed(1))});
+      }
+    });
+    userPoints.sort(function(a,b){ return a.x - b.x; });
+
+    if (growthChartInstance) growthChartInstance.destroy();
+
+    var unitLabel = isWeight ? (isMetric ? 'kg' : 'lbs') : (isMetric ? 'cm' : 'in');
+
+    growthChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'Baby Jujube',
+            data: userPoints,
+            borderColor: '#a35252',
+            backgroundColor: '#a35252',
+            borderWidth: 3,
+            pointRadius: 6,
+            showLine: true,
+            zIndex: 10
+          },
+          {
+            label: '95th Percentile',
+            data: p95,
+            borderColor: 'rgba(106, 89, 82, 0.3)',
+            borderDash: [4, 4],
+            pointRadius: 0,
+            fill: false
+          },
+          {
+            label: '50th Percentile',
+            data: p50,
+            borderColor: 'rgba(91, 123, 90, 0.6)',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false
+          },
+          {
+            label: '5th Percentile',
+            data: p5,
+            borderColor: 'rgba(106, 89, 82, 0.3)',
+            borderDash: [4, 4],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            type: 'linear',
+            title: { display: true, text: 'Age (Months)' },
+            min: 0,
+            max: 12
+          },
+          y: {
+            title: { display: true, text: (isWeight ? 'Weight (' : 'Height (') + unitLabel + ')' }
+          }
+        },
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
   // ---------- Timer actions ----------
   function startSleep(customStartMs){
     var timers = getTimers();
@@ -847,342 +1151,3 @@
     editing = { mode: 'new', reviewing: true, type: 'Sleep', activityKey: null,
       startMs: t.startedAt, endMs: endedAt, note: '' };
     renderRows();
-  }
-
-  function setSleepStartLive(value){
-    var timers = getTimers();
-    if (!timers.Sleep) return;
-    timers.Sleep.startedAt = fromLocalInputValue(value);
-    setTimers(timers);
-    tickSleep();
-  }
-
-  function startFeed(side){
-    var timers = getTimers();
-    timers.Breastfeed = { startedAt: Date.now(), beginSide: side, currentSide: side, currentSideStart: Date.now(), leftSeconds:0, rightSeconds:0 };
-    setTimers(timers);
-    renderFeedRow();
-  }
-
-  function switchSide(newSide){
-    var timers = getTimers();
-    var t = timers.Breastfeed;
-    if (!t) return;
-    var elapsed = (Date.now() - t.currentSideStart)/1000;
-    if (t.currentSide === 'LEFT') t.leftSeconds += elapsed; else t.rightSeconds += elapsed;
-    t.currentSide = newSide;
-    t.currentSideStart = Date.now();
-    setTimers(timers);
-    renderFeedRow();
-  }
-
-  function stopFeed(){
-    var timers = getTimers();
-    var t = timers.Breastfeed;
-    if (!t) return;
-    var elapsed = (Date.now() - t.currentSideStart)/1000;
-    if (t.currentSide === 'LEFT') t.leftSeconds += elapsed; else t.rightSeconds += elapsed;
-    timers.Breastfeed = null;
-    setTimers(timers);
-    editing = { mode: 'new', reviewing: true, type: 'Breastfeed', activityKey: null,
-      startMs: t.startedAt, beginSide: t.beginSide, endSide: t.currentSide,
-      leftMin: Math.round(t.leftSeconds/60), rightMin: Math.round(t.rightSeconds/60), note: '' };
-    renderRows();
-  }
-
-  function setFeedStartLive(value){
-    var timers = getTimers();
-    var t = timers.Breastfeed;
-    if (!t) return;
-    var newStart = fromLocalInputValue(value);
-    var delta = newStart - t.startedAt;
-    t.startedAt = newStart;
-    t.currentSideStart += delta;
-    setTimers(timers);
-    tickFeed();
-  }
-
-  // ---------- Manual add / edit / delete ----------
-  function openNew(type){
-    var now = Date.now();
-    editing = { mode: 'new', type: type, activityKey: null, note: '' };
-    if (type === 'Sleep'){
-      editing.startMs = now - 15*60000; editing.endMs = now; editing.ongoing = false;
-    } else if (type === 'Breastfeed'){
-      editing.startMs = now - 10*60000;
-      editing.beginSide = 'LEFT'; editing.endSide = 'LEFT';
-      editing.leftMin = 10; editing.rightMin = 0;
-    } else if (type === 'Bottlefeed'){
-      editing.startMs = now;
-      editing.milkType = 'Breast Milk'; editing.amountOz = ''; editing.amountMl = '';
-    } else if (type === 'Diaper'){
-      editing.startMs = now;
-      editing.diaperType = null; editing.color = null; editing.texture = null; editing.size = null;
-    } else if (type === 'Bath' || type === 'Medicine'){
-      editing.startMs = now;
-    }
-    renderRows();
-  }
-
-  function openEdit(entry){
-    var rawType = entry['Type'];
-    var type = rawType;
-    if (rawType === 'Routine' && entry['[Routine] Routine'] === 'Bath') type = 'Bath';
-    else if (rawType === 'Medical') type = 'Medicine';
-    else if (rawType === 'Bottlefeed' || rawType === 'Formula' || rawType === 'Bottle' || rawType === 'Bottle Feed') type = 'Bottlefeed';
-    var startMs = Number(entry['Start Date/time (Epoch)']) || Date.parse(entry['Start Date/time']);
-    editing = { mode: 'edit', type: type, activityKey: entry['_activityKey'], note: entry['Note']||'', startMs: startMs };
-    if (type === 'Sleep'){
-      editing.endMs = Number(entry['[Sleep] End Date/time (Epoch)']) || (startMs + (Number(entry['[Sleep] Duration (Seconds)'])||0)*1000);
-      editing.ongoing = false;
-    } else if (type === 'Breastfeed'){
-      editing.beginSide = entry['[Breastfeed] Begin Side'] || 'LEFT';
-      editing.endSide = entry['[Breastfeed] End Side'] || editing.beginSide;
-      editing.leftMin = Math.round((Number(entry['[Breastfeed] Left Duration (Seconds)'])||0)/60);
-      editing.rightMin = Math.round((Number(entry['[Breastfeed] Right Duration (Seconds)'])||0)/60);
-    } else if (type === 'Bottlefeed'){
-      editing.milkType = entry['[Bottle Feed] Type'] || 'Breast Milk';
-      editing.amountOz = entry['[Bottle Feed] Volume'] || '';
-      if (editing.amountOz !== '') editing.amountMl = Math.round(parseFloat(editing.amountOz) * 29.5735);
-    } else if (type === 'Diaper'){
-      editing.diaperType = entry['[Diaper] Type'] || null;
-      editing.color = entry['[Diaper] Dirty Color'] || null;
-      editing.texture = entry['[Diaper] Dirty Texture'] || null;
-      editing.size = entry['[Diaper] Detail'] || null;
-    } else if (type === 'Medicine'){
-      editing.medName = entry['[Medical] Medication'] || '';
-    }
-    renderRecent();
-  }
-
-  function cancelEdit(){
-    editing = null;
-    renderRows(); renderRecent();
-  }
-
-  // Maps strictly to existing backend Nara headers
-  function buildPayloadFromEditing(d){
-    var base = {
-      "Type": d.type, "Profile Name": CONFIG.PROFILE_NAME,
-      "Start Date/time": formatDateTime(d.startMs), "Start Date/time (Epoch)": d.startMs,
-      "Created By Caregiver": CONFIG.CAREGIVER, "Last Updated By Caregiver": CONFIG.CAREGIVER,
-      "Time Zone": CONFIG.TIMEZONE, "Note": d.note || ""
-    };
-    if (d.type === 'Sleep'){
-      base["[Sleep] Duration (Seconds)"] = Math.max(0, Math.round((d.endMs - d.startMs)/1000));
-      base["[Sleep] End Date/time"] = formatDateTime(d.endMs);
-      base["[Sleep] End Date/time (Epoch)"] = d.endMs;
-    } else if (d.type === 'Breastfeed'){
-      base["[Breastfeed] Begin Side"] = d.beginSide;
-      base["[Breastfeed] End Side"] = d.endSide;
-      base["[Breastfeed] Left Duration (Seconds)"] = Math.max(0, Math.round((Number(d.leftMin)||0)*60));
-      base["[Breastfeed] Right Duration (Seconds)"] = Math.max(0, Math.round((Number(d.rightMin)||0)*60));
-    } else if (d.type === 'Bottlefeed'){
-      base["Type"] = "Bottle Feed";
-      base["[Bottle Feed] Type"] = d.milkType || "Breast Milk";
-      base["[Bottle Feed] Volume"] = d.amountOz || "";
-      base["[Bottle Feed] Volume Unit"] = "oz";
-      if (d.milkType === 'Formula') {
-        base["[Bottle Feed] Formula Volume"] = d.amountOz || "";
-        base["[Bottle Feed] Formula Volume Unit"] = "oz";
-      } else {
-        base["[Bottle Feed] Breast Milk Volume"] = d.amountOz || "";
-        base["[Bottle Feed] Breast Milk Volume Unit"] = "oz";
-      }
-    } else if (d.type === 'Diaper'){
-      base["[Diaper] Type"] = d.diaperType;
-      base["[Diaper] Dirty Color"] = d.color || "";
-      base["[Diaper] Dirty Texture"] = d.texture || "";
-      base["[Diaper] Detail"] = d.size || "";
-    } else if (d.type === 'Bath'){
-      base["Type"] = "Routine";
-      base["[Routine] Routine"] = "Bath";
-    } else if (d.type === 'Medicine'){
-      base["Type"] = "Medical";
-      var med = getCurrentMed();
-      base["[Medical] Medication"] = (d.mode === 'edit' ? d.medName : (med ? med.name : '')) || '';
-    }
-    return base;
-  }
-
-  function saveEntry(){
-    if (!editing) return;
-    if (editing.type === 'Sleep' && editing.ongoing) {
-      var startMs = editing.startMs;
-      editing = null;
-      startSleep(startMs);
-      return;
-    }
-    if (editing.type === 'Diaper' && !editing.diaperType) return;
-    if (editing.type === 'Bottlefeed' && !editing.milkType) return;
-    var payload = buildPayloadFromEditing(editing);
-    if (editing.mode === 'edit'){
-      payload['_op'] = 'update';
-      payload['_activityKey'] = editing.activityKey;
-      updateCacheEntry(editing.activityKey, payload);
-    } else {
-      payload['_activityKey'] = uid();
-      payload['_familyKey'] = 'local';
-      payload['_profileKey'] = 'local';
-      addCacheEntry(payload);
-    }
-    queueOp(payload);
-    editing = null;
-    renderRows(); renderRecent(); fetchSummary();
-  }
-
-  function deleteEntry(){
-    if (!editing || editing.mode !== 'edit') return;
-    if (!confirm('Delete this entry?')) return;
-    var key = editing.activityKey;
-    queueOp({ _op: 'delete', _activityKey: key });
-    removeCacheEntry(key);
-    editing = null;
-    renderRows(); renderRecent(); fetchSummary();
-  }
-
-  // ---------- Ticking ----------
-  function tickSleep(){
-    var t = getTimers().Sleep;
-    var el = document.getElementById('sleepTimerText');
-    if (t && el) el.textContent = formatElapsed((Date.now()-t.startedAt)/1000);
-  }
-  function tickFeed(){
-    var t = getTimers().Breastfeed;
-    var elText = document.getElementById('feedTimerText');
-    var elSub = document.getElementById('feedSubText');
-    if (t && elText){
-      var currentElapsed = (Date.now() - t.currentSideStart)/1000;
-      elText.textContent = formatElapsed(currentElapsed);
-      if (elSub) elSub.textContent = feedSubLabel(t);
-    }
-  }
-
-  function tickMed(){
-    if (editing && editing.type === 'Medicine') return;
-    var med = getCurrentMed();
-    if (!med || !med.name) return;
-    var el = document.getElementById('doseStatusText');
-    if (el) el.textContent = doseStatusText(med, getLastDose());
-  }
-
-  // ---------- Event wiring ----------
-  document.addEventListener('click', function(e){
-    var groupChip = e.target.closest('[data-group]');
-    if (groupChip && editing){
-      var group = groupChip.dataset.group, value = groupChip.dataset.value;
-      editing[group] = (editing[group] === value) ? null : value;
-      if (editing.mode === 'new') renderRows(); else renderRecent();
-      return;
-    }
-    var sideChipEl = e.target.closest('[data-side-field]');
-    if (sideChipEl && editing){
-      editing[sideChipEl.dataset.sideField] = sideChipEl.dataset.sideValue;
-      if (editing.mode === 'new') renderRows(); else renderRecent();
-      return;
-    }
-    var tab = e.target.closest('.tab-btn');
-    if (tab){
-      currentSummaryRange = tab.dataset.range;
-      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b===tab); });
-      var cached = localStorage.getItem('jujube_summary_' + currentSummaryRange);
-      if (cached) renderSummary(JSON.parse(cached));
-      fetchSummary();
-      return;
-    }
-    var btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    var action = btn.dataset.action;
-    if (action === 'start-sleep') startSleep();
-    else if (action === 'stop-sleep') stopSleep();
-    else if (action === 'start-feed') startFeed(btn.dataset.side);
-    else if (action === 'switch-side') switchSide(btn.dataset.side);
-    else if (action === 'stop-feed') stopFeed();
-    else if (action === 'open-new') openNew(btn.dataset.type);
-    else if (action === 'open-med-config'){
-      var currentMed = getCurrentMed() || { name:'', intervalHours:6 };
-      editing = { mode:'config', type:'Medicine', name: currentMed.name, intervalHours: currentMed.intervalHours };
-      renderRows();
-    }
-    else if (action === 'save-med-config') saveMedConfig();
-    else if (action === 'cancel-edit') cancelEdit();
-    else if (action === 'save-entry') saveEntry();
-    else if (action === 'delete-entry') deleteEntry();
-    else if (action === 'quick-delete'){
-      var qkey = btn.dataset.key;
-      if (confirm('Delete this entry?')){
-        queueOp({ _op: 'delete', _activityKey: qkey });
-        removeCacheEntry(qkey);
-        if (editing && editing.activityKey === qkey) editing = null;
-        renderRecent(); renderRows(); fetchSummary();
-      }
-    }
-  });
-
-  document.addEventListener('change', function(e){
-    if (e.target && e.target.dataset && e.target.dataset.action === 'toggle-sleep-ongoing') {
-      if (editing && editing.type === 'Sleep') {
-        editing.ongoing = e.target.checked;
-        renderRows();
-      }
-    }
-  });
-
-  document.addEventListener('dblclick', function(e){
-    var row = e.target.closest('.entry');
-    if (!row) return;
-    var key = row.dataset.key;
-    if (!key) return;
-    var entry = getCache().filter(function(x){ return x['_activityKey']===key; })[0];
-    if (entry) openEdit(entry);
-  });
-
-  function onEditFieldChange(e){
-    var field = e.target.dataset && e.target.dataset.edit;
-    if (field && editing){
-      if (field === 'startMs' || field === 'endMs') {
-        editing[field] = fromLocalInputValue(e.target.value);
-      } else if (field === 'amountOz') {
-        editing.amountOz = e.target.value;
-        if (e.target.value !== '') editing.amountMl = Math.round(parseFloat(e.target.value) * 29.5735);
-        if (editing.type === 'Bottlefeed') renderRows();
-      } else if (field === 'amountMl') {
-        editing.amountMl = e.target.value;
-        if (e.target.value !== '') editing.amountOz = (parseFloat(e.target.value) / 29.5735).toFixed(1);
-        if (editing.type === 'Bottlefeed') renderRows();
-      } else {
-        editing[field] = e.target.value;
-      }
-      return;
-    }
-    var live = e.target.dataset && e.target.dataset.editLive;
-    if (live === 'sleep-start') setSleepStartLive(e.target.value);
-    else if (live === 'feed-start') setFeedStartLive(e.target.value);
-  }
-  document.addEventListener('change', onEditFieldChange);
-  document.addEventListener('input', function(e){
-    var field = e.target.dataset && e.target.dataset.edit;
-    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours' || field === 'amountOz' || field === 'amountMl') onEditFieldChange(e);
-  });
-
-  window.addEventListener('online', flushPending);
-  document.addEventListener('visibilitychange', function(){
-    if (document.visibilityState === 'visible'){
-      renderRows(); flushPending(); fetchRecent(); fetchSummary();
-    }
-  });
-
-  // ---------- Init ----------
-  document.getElementById('age').textContent = computeAge(CONFIG.BIRTH_DATE);
-  renderRecent();
-  renderRows();
-  fetchRecent();
-  fetchSummary();
-  updateSyncNote();
-  flushPending();
-  setInterval(function(){ tickSleep(); tickFeed(); tickMed(); }, 1000);
-
-})();
-</script>
-</body>
-</html>
