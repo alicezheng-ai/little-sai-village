@@ -1,184 +1,60 @@
-/* Shared Typography & Main Stylesheet for Baby is Figureoutable */
-:root {
-  --paper: #f6f1e6;
-  --paper-card: #fffdf9;
-  --paper-line: #e3d9c4;
-  --ink: #332a24;
-  --ink-soft: #6b5e52;
-  --rose-deep: #a35252;
-  --gold-soft: #f2e3c6;
-  --coral: #c97a52;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Little Sai and His Village of Love</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-* {
-  box-sizing: border-box;
-}
+<nav class="site-nav">
+  <a href="index.html" class="site-nav__mark">Little Sai <span>&amp; His Village of Love</span></a>
+  <ul class="site-nav__links">
+    <li><a href="events.html">Events</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li><a href="wishes.html">Wishes</a></li>
+    <li><a href="nanny.html">Nanny Guide</a></li>
+    <li><a href="tools/baby-tracker/index.html">Tracker</a></li>
+  </ul>
+</nav>
 
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--paper, #f6f1e6);
-  color: var(--ink, #332a24);
-  font-family: 'Work Sans', 'Noto Sans SC', sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+<main class="wrap">
+  <header class="hero">
+    <h1>Little Sai and His Village of Love</h1>
+    <p class="lede">This is where his tree begins. His 100th day is the first branch — every celebration after adds another. The videos, the photos, the wishes are the leaves that fill in around them, month by month.</p>
+  </header>
 
-/* Navigation */
-.site-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 32px;
-  max-width: 1100px;
-  margin: 0 auto;
-  border-bottom: 1px solid var(--paper-line, #e3d9c4);
-}
+  <section class="card">
+    <h2 class="section-title" style="margin-top:0;">The first branch</h2>
+    <p>Everything the village needs for Sai's 100th day, gathered in one place.</p>
+    <p style="margin-top: 12px;">
+      <a href="events.html" class="btn btn--primary">Sai's 100 Days Celebration</a>
+    </p>
+    <p style="font-size: 0.9rem; color: var(--ink-soft); margin-top: 8px;">
+      Logistics, the RSVP, the menu, and the traditions we're sharing with him.
+    </p>
+  </section>
 
-.site-nav__mark {
-  font-family: 'Fraunces', 'Noto Serif SC', serif;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: var(--ink, #332a24);
-  text-decoration: none;
-}
+  <section class="card">
+    <h2 class="section-title" style="margin-top:0;">Growing, one month at a time</h2>
+    <p>A new video from Sai every month. Four so far — <a href="videos.html">see them all</a>.</p>
+  </section>
+</main>
 
-.site-nav__mark span {
-  font-weight: 400;
-  font-size: 0.9rem;
-  opacity: 0.7;
-}
+<footer class="site-footer">
+  <p>
+    <a href="index.html">Home</a> &middot; 
+    <a href="events.html">Events</a> &middot; 
+    <a href="videos.html">Videos</a> &middot; 
+    <a href="wishes.html">Wishes</a> &middot; 
+    <a href="nanny.html">Nanny Guide</a> &middot; 
+    <a href="tools/baby-tracker/index.html">Tracker</a>
+  </p>
+</footer>
 
-.site-nav__links {
-  display: flex;
-  list-style: none;
-  gap: 24px;
-  margin: 0;
-  padding: 0;
-}
-
-.site-nav__links a {
-  color: var(--ink-soft, #6b5e52);
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: color 0.15s ease;
-}
-
-.site-nav__links a:hover,
-.site-nav__links a.active {
-  color: var(--rose-deep, #a35252);
-}
-
-/* Main Container & Hero */
-.wrap {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 32px 20px 60px;
-}
-
-header.hero h1 {
-  font-family: 'Fraunces', 'Noto Serif SC', serif;
-  font-size: 2.2rem;
-  font-weight: 500;
-  color: var(--ink, #332a24);
-}
-
-/* Card Containers */
-.card {
-  background: var(--paper-card, #fffdf9);
-  border: 1px solid var(--paper-line, #e3d9c4);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-}
-
-/* Video Reel & Framing Fixes */
-.video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.video-card {
-  background: var(--paper-card, #fffdf9);
-  border: 1px solid var(--paper-line, #e3d9c4);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.video-card__frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 9 / 16;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #000;
-}
-
-.video-card__frame iframe {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 108%;
-  height: 108%;
-  transform: translate(-50%, -50%);
-  border: none;
-  object-fit: cover;
-}
-
-.video-card__info {
-  padding: 0 4px 4px;
-}
-
-.video-card__label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--rose-deep, #a35252);
-  margin-bottom: 4px;
-}
-
-.video-card__caption {
-  font-size: 0.95rem;
-  color: var(--ink, #332a24);
-  margin: 0;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid var(--paper-line, #d4c8b3);
-  background: #fff;
-  color: var(--ink, #332a24);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn--primary {
-  background: var(--rose-deep, #a35252);
-  color: #fff;
-  border-color: var(--rose-deep, #a35252);
-}
-
-.btn--danger {
-  background: #fff;
-  color: var(--coral, #c97a52);
-  border-color: var(--paper-line, #d4c8b3);
-}
-
-.btn--gold {
-  background: var(--gold-soft, #f2e3c6);
-  border-color: var(--gold-soft, #f2e3c6);
-  color: var(--ink, #332a24);
-}
+</body>
+</html>
