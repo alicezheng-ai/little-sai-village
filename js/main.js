@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURATION & CONSTANTS
 // ==========================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLlfOHMFPxUWpjqA63xhQdLYod2HEn-n3D4mnzCwdTQX9CiL6hqqhP4KO913stS1qz/exec";[cite: 2]
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLlfOHMFPxUWpjqA63xhQdLYod2HEn-n3D4mnzCwdTQX9CiL6hqqhP4KO913stS1qz/exec";[cite: 1, 2]
 const CACHE_KEY_LOGS = "jujube_recent_logs";
 const CACHE_KEY_GROWTH = "jujube_growth_data";
 
@@ -15,7 +15,7 @@ const CM_TO_INCH = 0.393701;
 let appState = {
   recentLogs: [],
   growthLogs: [],
-  displayUnitSystem: 'metric' // 'metric' (kg / cm) or 'imperial' (lbs / in)
+  displayUnitSystem: 'imperial' // 'imperial' (lbs / in) or 'metric' (kg / cm)
 };
 
 // ==========================================
@@ -37,6 +37,7 @@ function setupUnitToggleListeners() {
   if (metricBtn) {
     metricBtn.addEventListener("click", () => {
       appState.displayUnitSystem = 'metric';
+      updateToggleUI('metric');
       renderGrowthChart(appState.growthLogs);
     });
   }
@@ -44,8 +45,22 @@ function setupUnitToggleListeners() {
   if (imperialBtn) {
     imperialBtn.addEventListener("click", () => {
       appState.displayUnitSystem = 'imperial';
+      updateToggleUI('imperial');
       renderGrowthChart(appState.growthLogs);
     });
+  }
+}
+
+function updateToggleUI(activeSystem) {
+  const metricBtn = document.getElementById("unit-toggle-metric");
+  const imperialBtn = document.getElementById("unit-toggle-imperial");
+
+  if (activeSystem === 'imperial') {
+    if (imperialBtn) { imperialBtn.style.background = "#fff"; }
+    if (metricBtn) { metricBtn.style.background = "transparent"; }
+  } else {
+    if (metricBtn) { metricBtn.style.background = "#fff"; }
+    if (imperialBtn) { imperialBtn.style.background = "transparent"; }
   }
 }
 
@@ -105,6 +120,72 @@ async function fetchAllData() {
     }
   } catch (error) {
     console.error("Failed to sync with Google Apps Script backend:", error);
+  }
+}
+
+// ==========================================
+// FORM SUBMISSION & BACKEND LOGGING
+// ==========================================
+
+function submitGrowthLog() {
+  const dateVal = document.getElementById("growthDate") ? document.getElementById("growthDate").value : "";
+  const weightVal = document.getElementById("growthWeight") ? document.getElementById("growthWeight").value : "";
+  const heightVal = document.getElementById("growthHeight") ? document.getElementById("growthHeight").value : "";
+  const tempVal = document.getElementById("growthTemp") ? document.getElementById("growthTemp").value : "";
+  const noteVal = document.getElementById("growthNote") ? document.getElementById("growthNote").value : "";
+
+  const weightUnit = document.getElementById("growthWeightUnit") ? document.getElementById("growthWeightUnit").value : "lbs";
+  const heightUnit = document.getElementById("growthHeightUnit") ? document.getElementById("growthHeightUnit").value : "in";
+
+  // Build epoch and formatted start time string
+  const startDateTimeStr = dateVal ? `${dateVal} 12:00` : new Date().toISOString().slice(0, 10) + " 12:00";
+  const epochMs = new Date(startDateTimeStr.replace(' ', 'T')).getTime();
+
+  const payload = {
+    "_op": "create",
+    "Type": "Growth",
+    "Profile Name": "Jujube",
+    "Start Date/time": startDateTimeStr,
+    "Start Date/time (Epoch)": epochMs,
+    "Created By Caregiver": "Alice",
+    "Last Updated By Caregiver": "Alice",
+    "[Growth] Weight": weightVal,
+    "[Growth] Weight Unit": weightUnit,
+    "[Growth] Height": heightVal,
+    "[Growth] Height Unit": heightUnit,
+    "[Medical] Temperature": tempVal,
+    "[Medical] Temperature Unit": "F",
+    "Note": noteVal,
+    "_activityKey": `manual_growth_${Date.now()}`
+  };
+
+  saveEntryToBackend(payload);
+}
+
+function resetGrowthForm() {
+  if (document.getElementById("growthDate")) document.getElementById("growthDate").value = "";
+  if (document.getElementById("growthWeight")) document.getElementById("growthWeight").value = "";
+  if (document.getElementById("growthHeight")) document.getElementById("growthHeight").value = "";
+  if (document.getElementById("growthTemp")) document.getElementById("growthTemp").value = "";
+  if (document.getElementById("growthNote")) document.getElementById("growthNote").value = "";
+}
+
+async function saveEntryToBackend(payload) {
+  try {
+    const response = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (result.ok) {
+      resetGrowthForm();
+      fetchAllData();
+    } else {
+      console.error("Error saving log:", result.error);
+    }
+  } catch (err) {
+    console.error("Failed to post payload to Google Apps Script:", err);
   }
 }
 
