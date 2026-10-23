@@ -2,320 +2,349 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jujube Care Log & Growth Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Jujube — Care Tracker</title>
   <link rel="stylesheet" href="../../css/style.css" />
-  
-  <!-- Chart.js Library for rendering growth charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
   <style>
-    .card {
-      background: #ffffff;
-      border-radius: 12px;
+    /* Baseline layout styling matching your exact design token variables */
+    :root {
+      --bg-color: #faf6f0;
+      --card-bg: #ffffff;
+      --card-border: #f0eae1;
+      --text-main: #332b2b;
+      --text-sub: #6b5e5e;
+      --text-muted: #8c7b7b;
+      --accent-rose: #a35252;
+      --accent-sand: #e6ded1;
+      --accent-chip: #f5ebe0;
+      --input-bg: #faf8f5;
+      --input-border: #e8e2d8;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
       padding: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      justify-content: center;
     }
-    .grid-actions {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
+
+    .tracker-app {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .action-btn {
-      padding: 12px 8px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: #f9f9f9;
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+
+    /* Active Timer Header Card */
+    .timer-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .timer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .timer-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .status-badge {
+      background: #eaf4e0;
+      color: #3b6e22;
+      font-size: 0.75rem;
       font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .timer-started {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+    .timer-started span {
+      background: #eee8df;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .timer-display {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+    .btn-wake {
+      background: var(--accent-rose);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 24px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: fit-content;
       cursor: pointer;
-      text-align: center;
     }
-    .action-btn.active {
-      background: #4e73df;
-      color: white;
-      border-color: #4e73df;
+
+    /* Action List Sections */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--card-border);
     }
-    .form-section {
-      display: none;
+    .action-row:last-child {
+      border-bottom: none;
     }
-    .form-section.active {
+    .action-info h4 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .action-info p {
+      margin: 2px 0 0 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .btn-pill-group {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-pill {
+      background: var(--accent-chip);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 8px 18px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .btn-pill-outline {
+      background: #fff;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .manual-link {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      text-decoration: underline;
+      cursor: pointer;
       display: block;
+      text-align: right;
+      margin-top: 4px;
     }
+
+    /* Form Fields Styling */
     .form-group {
       margin-bottom: 12px;
     }
     .form-group label {
       display: block;
-      font-size: 0.85rem;
-      margin-bottom: 4px;
+      font-size: 0.8rem;
       font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 4px;
     }
-    .form-group input, .form-group select, .form-group textarea {
+    .input-box {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .input-box input {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-    .form-group-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .form-group-row input {
-      flex: 1;
-    }
-    .form-group-row select {
-      width: 90px;
-    }
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .unit-toggle-group {
-      display: flex;
-      gap: 6px;
-      background: #f0f0f0;
-      padding: 4px;
-      border-radius: 8px;
-    }
-    .unit-btn {
       border: none;
       background: transparent;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      color: #555;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      box-sizing: border-box;
     }
-    .unit-btn.active {
-      background: #ffffff;
-      color: #2b2b2b;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .chart-wrapper {
-      position: relative;
-      height: 320px;
-      width: 100%;
-    }
-    .log-card {
-      background: #fafafa;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-    .log-header {
+
+    /* Actions Button Row */
+    .btn-action-row {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
     }
-    .log-time {
-      font-size: 0.85rem;
-      color: #777;
-    }
-    .btn-submit {
-      background: #4e73df;
-      color: white;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-weight: bold;
+    .btn-cancel {
+      background: #ffffff;
+      border: 1px solid #dcd4c8;
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-weight: 600;
+      color: #5a4f4f;
       cursor: pointer;
-      width: 100%;
-      margin-top: 8px;
+    }
+    .btn-log {
+      background: var(--accent-rose);
+      border: none;
+      border-radius: 20px;
+      padding: 8px 22px;
+      font-weight: 600;
+      color: #ffffff;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Jujube Baby Tracker</h1>
-    </header>
+  <div class="tracker-app">
 
-    <!-- Quick Action Category Selector -->
-    <div class="grid-actions">
-      <button class="action-btn active" onclick="switchTab('diaper')">Diaper</button>
-      <button class="action-btn" onclick="switchTab('breastfeed')">Breastfeed</button>
-      <button class="action-btn" onclick="switchTab('bottle')">Bottle Feed</button>
-      <button class="action-btn" onclick="switchTab('sleep')">Sleep</button>
-      <button class="action-btn" onclick="switchTab('growth')">Growth</button>
+    <!-- Active Sleep Timer Card -->
+    <div class="card timer-card">
+      <div class="timer-header">
+        <span class="timer-title">Sleep</span>
+        <span class="status-badge">running</span>
+      </div>
+      <div class="timer-started">
+        Started: <span id="sleepStartDisplay">Today</span>
+      </div>
+      <div class="timer-display" id="sleepTimerClock">0:00</div>
+      <button class="btn-wake" onclick="wakeUpSleepTimer()">Wake Up</button>
     </div>
 
-    <!-- ACTIVITY LOGGING FORMS -->
+    <!-- Main Action Sheet -->
     <div class="card">
       
-      <!-- 1. DIAPER FORM -->
-      <form id="diaperForm" class="form-section active">
-        <h3>Log Diaper</h3>
-        <div class="form-group">
-          <label>Type</label>
-          <select id="diaperType">
-            <option value="Wet">Wet</option>
-            <option value="Dirty">Dirty</option>
-            <option value="Dirty Wet">Dirty & Wet</option>
-            <option value="Dry">Dry</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Start Time</label>
-          <input type="datetime-local" id="diaperStartTime" />
-        </div>
-        <div class="form-group">
-          <label>Note</label>
-          <input type="text" id="diaperNote" placeholder="Optional notes" />
-        </div>
-        <button type="submit" class="btn-submit">Save Diaper Log</button>
-      </form>
-
-      <!-- 2. BREASTFEED FORM -->
-      <form id="breastfeedForm" class="form-section">
-        <h3>Log Breastfeed</h3>
-        <div class="form-group-row">
-          <div class="form-group" style="flex: 1;">
-            <label>Left Duration (mins)</label>
-            <input type="number" id="bfLeftMins" placeholder="0" />
+      <!-- Breastfeed -->
+      <div class="action-row" style="flex-direction: column; align-items: stretch;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="action-info">
+            <h4>Breastfeed</h4>
+            <p id="breastfeedLastSide">Last was left</p>
           </div>
-          <div class="form-group" style="flex: 1;">
-            <label>Right Duration (mins)</label>
-            <input type="number" id="bfRightMins" placeholder="0" />
+          <div class="btn-pill-group">
+            <button class="btn-pill-outline" onclick="startTimer('left')">Left</button>
+            <button class="btn-pill" onclick="startTimer('right')">Right</button>
           </div>
         </div>
-        <div class="form-group">
-          <label>Start Time</label>
-          <input type="datetime-local" id="bfStartTime" />
-        </div>
-        <div class="form-group">
-          <label>Note</label>
-          <input type="text" id="bfNote" placeholder="Optional notes" />
-        </div>
-        <button type="submit" class="btn-submit">Save Breastfeed Log</button>
-      </form>
+        <span class="manual-link" onclick="toggleForm('breastfeedManualForm')">log manually</span>
+      </div>
 
-      <!-- 3. BOTTLE FEED FORM -->
-      <form id="bottleForm" class="form-section">
-        <h3>Log Bottle Feed</h3>
-        <div class="form-group">
-          <label>Feed Type</label>
-          <select id="bottleType">
-            <option value="Breast Milk">Breast Milk</option>
-            <option value="Formula">Formula</option>
-          </select>
+      <!-- Bottlefeed -->
+      <div class="action-row">
+        <div class="action-info">
+          <h4>Bottlefeed</h4>
+          <p>Breast milk or Formula</p>
         </div>
-        <div class="form-group-row">
-          <input type="number" step="0.1" id="bottleVolume" placeholder="Volume" />
-          <select id="bottleVolumeUnit">
-            <option value="oz">oz</option>
-            <option value="ml">ml</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Start Time</label>
-          <input type="datetime-local" id="bottleStartTime" />
-        </div>
-        <div class="form-group">
-          <label>Note</label>
-          <input type="text" id="bottleNote" placeholder="Optional notes" />
-        </div>
-        <button type="submit" class="btn-submit">Save Bottle Feed Log</button>
-      </form>
+        <button class="btn-pill-outline" onclick="toggleForm('bottleForm')">+ Log</button>
+      </div>
 
-      <!-- 4. SLEEP FORM -->
-      <form id="sleepForm" class="form-section">
-        <h3>Log Sleep</h3>
-        <div class="form-group">
-          <label>Start Time</label>
-          <input type="datetime-local" id="sleepStartTime" />
+      <!-- Diaper -->
+      <div class="action-row">
+        <div class="action-info">
+          <h4>Diaper</h4>
+          <p>Tap to log</p>
         </div>
-        <div class="form-group">
-          <label>End Time (Leave empty if currently sleeping)</label>
-          <input type="datetime-local" id="sleepEndTime" />
-        </div>
-        <div class="form-group">
-          <label>Note</label>
-          <input type="text" id="sleepNote" placeholder="Optional notes" />
-        </div>
-        <button type="submit" class="btn-submit">Save Sleep Log</button>
-      </form>
-
-      <!-- 5. GROWTH FORM WITH FLEXIBLE UNITS -->
-      <form id="growthForm" class="form-section">
-        <h3>Log Growth Measurement</h3>
-        <div class="form-group">
-          <label>Weight</label>
-          <div class="form-group-row">
-            <input type="number" step="0.01" id="growthWeight" placeholder="e.g. 12.5 or 5.6" />
-            <select id="growthWeightUnit">
-              <option value="kg">kg</option>
-              <option value="lb">lb</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Height</label>
-          <div class="form-group-row">
-            <input type="number" step="0.1" id="growthHeight" placeholder="e.g. 60 or 23.5" />
-            <select id="growthHeightUnit">
-              <option value="cm">cm</option>
-              <option value="in">in</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Measurement Date</label>
-          <input type="datetime-local" id="growthStartTime" />
-        </div>
-
-        <button type="submit" class="btn-submit">Save Measurement</button>
-      </form>
+        <button class="btn-pill-outline" onclick="toggleForm('diaperForm')">+ Log</button>
+      </div>
 
     </div>
 
-    <!-- GROWTH CHART SECTION -->
-    <section class="card">
-      <div class="chart-header">
-        <h2>Growth Tracking Chart</h2>
-        <div class="unit-toggle-group">
-          <button id="unit-toggle-metric" class="unit-btn active">Metric (kg / cm)</button>
-          <button id="unit-toggle-imperial" class="unit-btn">Imperial (lbs / in)</button>
+    <!-- Growth / Temp Card (Preserved original card layout with unit selectors & date fix) -->
+    <div class="card">
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-top: 0; margin-bottom: 12px;">Growth / Temp</h3>
+      
+      <!-- Date Field (Fixed to prevent timestamp text bleeding on mobile) -->
+      <div class="form-group">
+        <label>Date</label>
+        <div class="input-box">
+          <input type="date" id="growthDate" />
         </div>
       </div>
-      <div class="chart-wrapper">
+
+      <!-- Weight & Height Fields with Unit Selectors -->
+      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+        
+        <!-- Weight -->
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-sub);">Weight</label>
+            <select id="growthWeightUnit" style="border: none; background: transparent; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer; outline: none;">
+              <option value="lbs">lbs</option>
+              <option value="kg">kg</option>
+            </select>
+          </div>
+          <div class="input-box">
+            <input type="number" step="0.01" id="growthWeight" placeholder="e.g. 14.5" />
+          </div>
+        </div>
+
+        <!-- Height -->
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-sub);">Height</label>
+            <select id="growthHeightUnit" style="border: none; background: transparent; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); cursor: pointer; outline: none;">
+              <option value="in">in</option>
+              <option value="cm">cm</option>
+            </select>
+          </div>
+          <div class="input-box">
+            <input type="number" step="0.1" id="growthHeight" placeholder="e.g. 24.5" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Temp -->
+      <div class="form-group">
+        <label>Temp (°F)</label>
+        <div class="input-box">
+          <input type="number" step="0.1" id="growthTemp" placeholder="e.g. 98.6" />
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>Note</label>
+        <div class="input-box">
+          <input type="text" id="growthNote" placeholder="optional" />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="btn-action-row">
+        <button type="button" class="btn-cancel" onclick="resetGrowthForm()">Cancel</button>
+        <button type="button" class="btn-log" onclick="submitGrowthLog()">Log</button>
+      </div>
+    </div>
+
+    <!-- Growth Chart Display Card -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin:0; font-size: 1.05rem;">Growth Chart</h3>
+        <div style="display:flex; gap: 4px; background: #f0eae1; padding: 3px; border-radius: 12px;">
+          <button id="unit-toggle-imperial" style="border:none; background: #fff; border-radius: 10px; padding: 4px 10px; font-size: 0.75rem; font-weight:700; cursor:pointer;">lbs / in</button>
+          <button id="unit-toggle-metric" style="border:none; background: transparent; border-radius: 10px; padding: 4px 10px; font-size: 0.75rem; font-weight:700; cursor:pointer;">kg / cm</button>
+        </div>
+      </div>
+      <div style="position: relative; height: 260px; width: 100%;">
         <canvas id="growthChart"></canvas>
       </div>
-    </section>
+    </div>
 
-    <!-- RECENT ACTIVITIES FEED -->
-    <section class="card">
-      <h2>Recent Activities</h2>
-      <div id="recent-logs-list">
-        <p>Loading recent logs...</p>
-      </div>
-    </section>
   </div>
 
-  <script>
-    // Tab switching logic for activity forms
-    function switchTab(tabName) {
-      document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.action-btn').forEach(el => el.classList.remove('active'));
-      
-      const targetForm = document.getElementById(tabName + 'Form');
-      if (targetForm) targetForm.classList.add('active');
-      
-      event.currentTarget.classList.add('active');
-    }
-  </script>
-
-  <!-- Main JavaScript File -->
   <script src="../../js/main.js"></script>
 </body>
 </html>
