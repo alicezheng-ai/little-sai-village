@@ -203,6 +203,18 @@ header.hero h1 {
   border-color: var(--rose-deep, #a35252);
 }
 
+.btn--gold {
+  background: var(--gold-soft, #f2e3c6);
+  color: var(--ink, #332a24);
+  border-color: var(--paper-line, #d4c8b3);
+}
+
+.btn--danger {
+  background: var(--rose-deep, #a35252);
+  color: #fff;
+  border-color: var(--rose-deep, #a35252);
+}
+
 /* Footer */
 .site-footer {
   text-align: center;
