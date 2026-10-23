@@ -8,6 +8,7 @@
   --rose-deep: #a35252;
   --gold-soft: #f2e3c6;
   --coral: #c97a52;
+  --sage: #5b7b5a;
 }
 
 * {
@@ -20,7 +21,7 @@ body {
   background-color: var(--paper, #f6f1e6);
   color: var(--ink, #332a24);
   font-family: 'Work Sans', 'Noto Sans SC', sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -35,13 +36,13 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Site Header & Navigation */
+/* Site Header & Navigation Container */
 .site-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 32px;
-  max-width: 1100px;
+  padding: 20px 24px;
+  max-width: 900px;
   margin: 0 auto;
   border-bottom: 1px solid var(--paper-line, #e3d9c4);
 }
@@ -49,21 +50,21 @@ a:hover {
 .site-nav__mark {
   font-family: 'Fraunces', 'Noto Serif SC', serif;
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--ink, #332a24);
   text-decoration: none;
 }
 
 .site-nav__mark span {
   font-weight: 400;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   opacity: 0.7;
 }
 
 .site-nav__links {
   display: flex;
   list-style: none;
-  gap: 24px;
+  gap: 20px;
   margin: 0;
   padding: 0;
 }
@@ -71,7 +72,7 @@ a:hover {
 .site-nav__links a {
   color: var(--ink-soft, #6b5e52);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
@@ -82,43 +83,94 @@ a:hover {
   font-weight: 600;
 }
 
-/* Layout Wrappers & Sections */
+/* Page Containers & Text Readability Wrappers */
 .wrap {
-  max-width: 900px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 32px 20px 60px;
 }
 
 .wrap--wide {
-  max-width: 1100px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
 }
 
+.band {
+  padding: 32px 0;
+  width: 100%;
+}
+
+.band--deep {
+  background: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid var(--paper-line, #e3d9c4);
+  border-bottom: 1px solid var(--paper-line, #e3d9c4);
+}
+
+/* Hero Section Formatting */
 header.hero {
-  padding: 40px 0 24px;
+  padding: 40px 20px 24px;
+  width: 100%;
+}
+
+.hero__inner {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 header.hero h1 {
   font-family: 'Fraunces', 'Noto Serif SC', serif;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 500;
-  margin: 0 0 12px 0;
+  margin: 12px 0;
   color: var(--ink, #332a24);
+  line-height: 1.25;
 }
 
 .lede {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--ink-soft, #6b5e52);
   margin-top: 0;
+  margin-bottom: 16px;
+  max-width: 720px;
 }
 
-.section-title {
+/* Age Counter Badge */
+.age-counter {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: #fff;
+  border: 1px solid var(--paper-line, #e3d9c4);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--ink-soft, #6b5e52);
+}
+
+.age-counter__num {
+  font-weight: 600;
+  color: var(--rose-deep, #a35252);
+}
+
+/* Section Headings */
+.section-head {
+  margin-bottom: 24px;
+}
+
+.section-head h2 {
   font-family: 'Fraunces', 'Noto Serif SC', serif;
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 500;
-  margin: 32px 0 12px;
+  margin: 0 0 6px 0;
 }
 
-/* Card & Content Containers */
+.section-head p {
+  margin: 0;
+  color: var(--ink-soft, #6b5e52);
+  font-size: 0.95rem;
+}
+
+/* Cards & Duo Layout */
 .card {
   background: var(--paper-card, #fffdf9);
   border: 1px solid var(--paper-line, #e3d9c4);
@@ -128,12 +180,62 @@ header.hero h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 
-/* Video Grid & Framing Fix */
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+}
+
+.duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Event Cards */
+.event-card {
+  display: block;
+  background: var(--paper-card, #fffdf9);
+  border: 1px solid var(--paper-line, #e3d9c4);
+  border-radius: 16px;
+  padding: 24px;
+  color: var(--ink, #332a24);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.event-card:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+}
+
+.event-card__date {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--rose-deep, #a35252);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.event-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+  color: var(--rose-deep, #a35252);
+}
+
+.event-card p {
+  margin: 0;
+  color: var(--ink-soft, #6b5e52);
+}
+
+/* Video Grid */
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .video-card {
@@ -167,7 +269,7 @@ header.hero h1 {
 }
 
 .video-card__caption {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--ink, #332a24);
 }
 
@@ -179,6 +281,63 @@ header.hero h1 {
   text-transform: uppercase;
   color: var(--rose-deep, #a35252);
   margin-bottom: 2px;
+}
+
+/* Timeline / Tree Branch Component */
+.tree {
+  list-style: none;
+  padding: 0 0 0 20px;
+  margin: 24px 0 0 8px;
+  border-left: 2px solid var(--paper-line, #e3d9c4);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: relative;
+}
+
+.tree__node {
+  position: relative;
+  background: var(--paper-card, #fffdf9);
+  border: 1px solid var(--paper-line, #e3d9c4);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.tree__node::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 24px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--rose-deep, #a35252);
+  border: 3px solid var(--paper, #f6f1e6);
+}
+
+.tree__date {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rose-deep, #a35252);
+  margin-bottom: 4px;
+}
+
+.tree__title {
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink, #332a24);
+  margin: 0 0 6px 0;
+}
+
+.tree__body {
+  margin: 0;
+  color: var(--ink-soft, #6b5e52);
+  font-size: 0.95rem;
 }
 
 /* Buttons */
@@ -207,12 +366,6 @@ header.hero h1 {
   background: var(--gold-soft, #f2e3c6);
   color: var(--ink, #332a24);
   border-color: var(--paper-line, #d4c8b3);
-}
-
-.btn--danger {
-  background: var(--rose-deep, #a35252);
-  color: #fff;
-  border-color: var(--rose-deep, #a35252);
 }
 
 /* Footer */
