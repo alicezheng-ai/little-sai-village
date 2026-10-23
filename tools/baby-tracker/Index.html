@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Baby is Figureoutable</title>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Baby is Figureoutable">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f6f1e6">
+
+<!-- Shared Typography & Main Stylesheet from Village Site -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../css/style.css">
+
+<!-- Chart.js CDN for Growth Percentile Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* Form Layout Polish & Safety Overflow Guards */
+  .row-active {
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 14px;
+    padding: 16px !important;
+    margin: 8px 0;
+    box-shadow: inset 0 0 0 1px var(--paper-line, #e3d9c4);
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  .form-row-2col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-row-3col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-soft, #6b5e52);
+  }
+
+  .form-control {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid var(--paper-line, #d4c8b3);
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 0.85rem;
+  }
+
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--paper-line, #d4c8b3);
+    background: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .chip-btn.active {
+    background: var(--rose-deep, #a35252);
+    color: #fff;
+    border-color: var(--rose-deep, #a35252);
+  }
+
+  .tag-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    border-radius: 12px;
+    background: var(--gold-soft, #f2e3c6);
+    color: var(--ink, #332a24);
+    font-weight: normal;
+    text-transform: lowercase;
+  }
+
+  .actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .actions-right {
+    display: flex;
+    gap: 8px;
+  }
+
+  .row.row-active {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .row-active-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .row-active .time-input {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .row-active-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .row-timer {
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  header.hero,
+  header.hero .hero__inner {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 0 !important;
+  }
+
+  header.hero {
+    margin-top: 0 !important;
+  }
+
+  header.hero h1 {
+    margin-top: 0;
+  }
+
+  /* Growth Chart Modal Styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 33, 28, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open {
+    display: flex;
+  }
+  .modal-card {
+    background: #fffdf9;
+    border-radius: 18px;
+    max-width: 500px;
+    width: 100%;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: var(--ink-soft, #6b5e52);
+  }
+  .chart-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+</style>
+
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="../../index.html" class="site-nav__mark">Baby is Figureoutable <span>&amp; His Village of Love</span></a>
+  <ul class="site-nav__links">
+    <li><a href="../../events.html">Events</a></li>
+    <li><a href="../../videos.html">Videos</a></li>
+    <li><a href="../../wishes.html">Wishes</a></li>
+  </ul>
+</nav>
+
+<main class="wrap" style="max-width: 540px; padding-top: 24px;">
+
+  <header class="hero" style="text-align: center; margin-bottom: 24px;">
+    <div class="hero__inner">
+      <h1>Baby is Figureoutable</h1>
+      <div class="age-counter" id="age" style="margin-top: 8px;"></div>
+    </div>
+  </header>
+
+  <div class="card" id="panelActions" style="margin-bottom: 24px;">
+    <div class="row" id="rowSleep"></div>
+    <div class="row" id="rowFeed"></div>
+    <div class="row" id="rowBottle"></div>
+    <div class="row" id="rowDiaper"></div>
+    <div class="row" id="rowGrowth"></div>
+    <div class="row" id="rowBath"></div>
+    <div class="row" id="rowMedicine"></div>
+  </div>
+
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="summary-tabs" style="display:flex; border-bottom: 1px solid var(--paper-line, #e3d9c4);">
+      <button class="tab-btn active" data-range="today" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Today</button>
+      <button class="tab-btn" data-range="24h" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Last 24h</button>
+    </div>
+    <div class="summary-body" id="summaryBody"></div>
+  </div>
+
+  <h3 style="margin-bottom: 12px;">Recent</h3>
+  <div class="card" id="recentPanel"></div>
+
+  <div class="sync-note" id="syncNote" style="text-align:center; margin-top:16px; font-size:0.85rem; opacity:0.8;"></div>
+
+</main>
+
+<!-- Growth Percentile Modal -->
+<div class="modal-overlay" id="growthModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>WHO Boys Growth Chart</h3>
+      <button class="close-btn" id="closeGrowthModal">&times;</button>
+    </div>
+    <div class="chart-controls">
+      <div class="chip-group">
+        <button class="chip-btn active" id="btnMetricImperial" data-unit="imperial">Imperial (lbs/in)</button>
+        <button class="chip-btn" id="btnMetricMetric" data-unit="metric">Metric (kg/cm)</button>
+      </div>
+      <div class="chip-group">
+        <button class="chip-btn active" id="btnMetricWeight">Weight</button>
+        <button class="chip-btn" id="btnMetricHeight">Height</button>
+      </div>
+    </div>
+    <div style="position: relative; height: 260px; width: 100%;">
+      <canvas id="growthChartCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  // ---------- Configuration ----------
+  var CONFIG = {
+    APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxz-G6Mxu6IMxsnKE3noswcClorYMylOqrG6sFveYlcJNs0K4wx4EsFz_tEWwq1iNFD/exec",
+    PROFILE_NAME: "Jujube",
+    CAREGIVER: "Alice",
+    TIMEZONE: "America/Los_Angeles",
+    BIRTH_DATE: "2026-06-12"
+  };
+  var configured = !CONFIG.APPS_SCRIPT_URL.startsWith("PASTE_");
+
+  // ---------- Storage keys ----------
+  var K_TIMERS = 'jujube_timers_v2';
+  var K_PENDING = 'jujube_pending_sync';
+  var K_CACHE = 'jujube_recent_cache';
+
+  // ---------- Transient UI state ----------
+  var editing = null; 
+  var currentSummaryRange = 'today';
+  var growthChartInstance = null;
+  var currentChartUnit = 'imperial';
+  var currentChartMetric = 'weight';
+
+  // WHO Growth Standard Data Points (Boys 0 - 12 Months)
+  var WHO_BOYS_WEIGHT_KG = [
+    [0, 2.5, 3.3, 4.3], [1, 3.4, 4.5, 5.8], [2, 4.3, 5.6, 7.1],
+    [3, 5.0, 6.4, 8.0], [4, 5.6, 7.0, 8.7], [5, 6.1, 7.5, 9.3],
+    [6, 6.4, 7.9, 9.8], [7, 6.7, 8.3, 10.3], [8, 6.9, 8.6, 10.7],
+    [9, 7.1, 8.9, 11.0], [10, 7.4, 9.2, 11.4], [11, 7.6, 9.4, 11.7], [12, 7.8, 9.6, 12.0]
+  ];
+
+  var WHO_BOYS_HEIGHT_CM = [
+    [0, 46.1, 49.9, 53.7], [1, 50.8, 54.7, 58.6], [2, 54.4, 58.4, 62.4],
+    [3, 57.3, 61.4, 65.5], [4, 59.7, 63.9, 68.0], [5, 61.7, 65.9, 70.1],
+    [6, 63.3, 67.6, 71.9], [7, 64.8, 69.1, 73.5], [8, 66.2, 70.6, 75.0],
+    [9, 67.5, 72.0, 76.5], [10, 68.7, 73.3, 77.9], [11, 69.9, 74.5, 79.2], [12, 71.0, 75.7, 80.5]
+  ];
+
+  // ---------- Helpers ----------
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function formatDateTime(ms){
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' +
+           pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  function formatTimeOnly(ms){
+    var d = new Date(ms);
+    var h = d.getHours();
+    var m = pad(d.getMinutes());
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12; h = h ? h : 12;
+    return h + ':' + m + ' ' + ampm;
+  }
+
+  function toLocalInputValue(ms){
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function fromLocalInputValue(str){
+    var parts = str.split('T');
+    var dateParts = parts[0].split('-').map(Number);
+    var timeParts = (parts[1]||'00:00').split(':').map(Number);
+    return new Date(dateParts[0], dateParts[1]-1, dateParts[2], timeParts[0], timeParts[1], 0).getTime();
+  }
+
+  function formatElapsed(totalSeconds){
+    totalSeconds = Math.max(0, Math.floor(totalSeconds));
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+    if (h > 0) return h + ':' + pad(m) + ':' + pad(s);
+    return m + ':' + pad(s);
+  }
+
+  function formatDuration(totalSeconds){
+    totalSeconds = Math.max(0, Math.round(totalSeconds));
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.round((totalSeconds % 3600) / 60);
+    if (h > 0) return h + 'h ' + m + 'm';
+    if (totalSeconds >= 60) return m + 'm';
+    return totalSeconds + 's';
+  }
+
+  function formatRelative(ms){
+    var diff = Math.max(0, Date.now() - ms);
+    var mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    var remMins = mins % 60;
+    if (hrs < 24) return hrs + 'h ' + remMins + 'm ago';
+    var days = Math.floor(hrs / 24);
+    return days + 'd ago';
+  }
+
+  function computeAge(birthDateStr){
+    var birth = new Date(birthDateStr + 'T00:00:00');
+    var now = new Date();
+    var months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+    var days = now.getDate() - birth.getDate();
+    if (days < 0){
+      months -= 1;
+      var prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months <= 0) return days + (days === 1 ? ' day old' : ' days old');
+    return months + ' mo ' + days + 'd';
+  }
+
+  function getAgeInMonths(ms){
+    var birth = new Date(CONFIG.BIRTH_DATE + 'T00:00:00').getTime();
+    var diffDays = (ms - birth) / (1000 * 3600 * 24);
+    return Math.max(0, parseFloat((diffDays / 30.4375).toFixed(2)));
+  }
+
+  function uid(){
+    return 't-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ---------- Local storage state ----------
+  function getTimers(){ try { return JSON.parse(localStorage.getItem(K_TIMERS)) || {}; } catch(e){ return {}; } }
+  function setTimers(t){ localStorage.setItem(K_TIMERS, JSON.stringify(t)); }
+
+  function getPending(){ try { return JSON.parse(localStorage.getItem(K_PENDING)) || []; } catch(e){ return []; } }
+  function setPending(list){ localStorage.setItem(K_PENDING, JSON.stringify(list)); }
+
+  function getCache(){ try { return JSON.parse(localStorage.getItem(K_CACHE)) || []; } catch(e){ return []; } }
+  function setCache(list){ localStorage.setItem(K_CACHE, JSON.stringify(list)); }
+
+  function addCacheEntry(entry){
+    var cache = getCache();
+    cache.unshift(entry);
+    setCache(cache.slice(0, 30));
+  }
+  function updateCacheEntry(key, entry){
+    var cache = getCache();
+    for (var i=0;i<cache.length;i++){
+      if (cache[i]['_activityKey'] === key){ cache[i] = Object.assign({}, cache[i], entry); break; }
+    }
+    setCache(cache);
+  }
+  function removeCacheEntry(key){
+    setCache(getCache().filter(function(e){ return e['_activityKey'] !== key; }));
+  }
+  function getLastFeedSide(){
+    var cache = getCache();
+    for (var i=0;i<cache.length;i++){
+      if (cache[i]['Type'] === 'Breastfeed'){
+        return cache[i]['[Breastfeed] End Side'] || cache[i]['[Breastfeed] Begin Side'] || null;
+      }
+    }
+    return null;
+  }
+
+  // ---------- Networking ----------
+  function queueOp(payload){
+    var pending = getPending();
+    pending.push(payload);
+    setPending(pending);
+    flushPending();
+  }
+
+  function flushPending(){
+    if (!configured) return;
+    var pending = getPending();
+    if (pending.length === 0) { updateSyncNote(); return; }
+    var next = pending[0];
+    var rest = pending.slice(1);
+    fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(next)
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (res && res.ok){
+        setPending(rest);
+        updateSyncNote();
+        if (rest.length > 0) flushPending();
+      } else {
+        updateSyncNote();
+      }
+    }).catch(function(){ updateSyncNote(); });
+  }
+
+  function updateSyncNote(){
+    var pending = getPending();
+    var el = document.getElementById('syncNote');
+    if (!configured || pending.length === 0){ el.textContent = ''; }
+    else { el.textContent = pending.length + ' entr' + (pending.length === 1 ? 'y' : 'ies') + ' waiting to sync\u2026'; }
+  }
+
+  function fetchRecent(){
+    if (!configured) return;
+    fetch(CONFIG.APPS_SCRIPT_URL + '?action=recent&limit=20')
+      .then(function(r){ return r.json(); })
+      .then(function(res){ if (res && res.ok){ setCache(res.entries); renderRecent(); renderRows(); } })
+      .catch(function(){});
+  }
+
+  function fetchSummary(){
+    if (!configured) return;
+    fetch(CONFIG.APPS_SCRIPT_URL + '?action=summary&range=' + currentSummaryRange)
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (res && res.ok){
+          localStorage.setItem('jujube_summary_' + currentSummaryRange, JSON.stringify(res.summary));
+          renderSummary(res.summary);
+        }
+      }).catch(function(){});
+  }
+
+  // ---------- Rendering: rows ----------
+  function renderRows(){ renderSleepRow(); renderFeedRow(); renderBottleRow(); renderDiaperRow(); renderGrowthRow(); renderBathRow(); renderMedicineRow(); }
+
+  function formTag(d){
+    if (d.mode === 'edit') return '<span class="tag-badge">edit</span>';
+    if (d.reviewing) return '<span class="tag-badge">save</span>';
+    return '<span class="tag-badge">manual</span>';
+  }
+
+  function formActions(mode, saveLabel, saveDisabled){
+    return '<div class="actions-bar">' +
+      (mode === 'edit' ? '<button class="btn btn--danger" data-action="delete-entry">Delete</button>' : '<span></span>') +
+      '<div class="actions-right">' +
+        '<button class="btn" data-action="cancel-edit">Cancel</button>' +
+        '<button class="btn btn--primary" data-action="save-entry"' + (saveDisabled ? ' disabled' : '') + '>' + (saveLabel||'Save') + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderSleepRow(){
+    var el = document.getElementById('rowSleep');
+    var t = getTimers().Sleep;
+
+    if (t){
+      el.className = 'row row-active';
+      el.innerHTML =
+        '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<div class="row-label" style="font-weight:600;">Sleep <span class="tag-badge">running</span></div>' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">' +
+            '<span>Started:</span>' +
+            '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="sleep-start">' +
+          '</div>' +
+        '</div>' +
+        '<div class="row-timer" id="sleepTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.startedAt)/1000) + '</div>' +
+        '<div class="row-active-actions"><button class="btn btn--primary" data-action="stop-sleep">Wake Up</button></div>';
+      return;
+    }
+
+    if (editing && editing.mode === 'new' && editing.type === 'Sleep'){
+      el.className = 'row row-active';
+      el.innerHTML = renderSleepForm(editing);
+      return;
+    }
+
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Sleep</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to start or adjust start time</div></div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<button class="btn btn--primary" data-action="start-sleep">Start</button>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Sleep">log manually</button>' +
+      '</div>';
+  }
+
+  function renderSleepForm(d){
+    var isOngoing = d.ongoing === true;
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Sleep ' + formTag(d) + '</div>' +
+        '<div class="form-group" style="margin-bottom:4px;">' +
+          '<label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:normal;">' +
+            '<input type="checkbox" ' + (isOngoing ? 'checked' : '') + ' data-action="toggle-sleep-ongoing"> ' +
+            'Sleep in progress (keep timer running)' +
+          '</label>' +
+        '</div>' +
+        '<div class="' + (isOngoing ? 'form-group' : 'form-row-2col') + '">' +
+          '<div class="form-group"><label>Fell Asleep</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+          (!isOngoing ? '<div class="form-group"><label>Woke Up</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.endMs) + '" data-edit="endMs"></div>' : '') +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, isOngoing ? 'Start Timer' : 'Save') +
+      '</div>'
+    );
+  }
+
+  function feedSubLabel(t){
+    var currentElapsed = (Date.now() - t.currentSideStart)/1000;
+    var liveLeft = t.currentSide === 'LEFT' ? t.leftSeconds + currentElapsed : t.leftSeconds;
+    var liveRight = t.currentSide === 'RIGHT' ? t.rightSeconds + currentElapsed : t.rightSeconds;
+    return 'L ' + formatDuration(liveLeft) + ' \u00b7 R ' + formatDuration(liveRight);
+  }
+
+  function renderFeedRow(){
+    var el = document.getElementById('rowFeed');
+    var t = getTimers().Breastfeed;
+
+    if (t){
+      var other = t.currentSide === 'LEFT' ? 'RIGHT' : 'LEFT';
+      el.className = 'row row-active';
+      el.innerHTML =
+        '<div class="row-active-top" style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<div class="row-label" style="font-weight:600;">Breastfeed <span class="tag-badge">' + t.currentSide.toLowerCase() + '</span></div>' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">' +
+            '<span>Started:</span>' +
+            '<input type="datetime-local" class="time-input" value="' + toLocalInputValue(t.startedAt) + '" data-edit-live="feed-start">' +
+          '</div>' +
+        '</div>' +
+        '<div class="row-timer" id="feedTimerText" style="font-size:2rem; font-weight:700; margin:8px 0;">' + formatElapsed((Date.now()-t.currentSideStart)/1000) + '</div>' +
+        '<div class="row-sub" id="feedSubText" style="font-size:0.85rem; opacity:0.8; margin-bottom:8px;">' + feedSubLabel(t) + '</div>' +
+        '<div class="row-active-actions" style="display:flex; gap:8px;">' +
+          '<button class="btn" data-action="switch-side" data-side="' + other + '">Switch to ' + other.toLowerCase() + '</button>' +
+          '<button class="btn btn--primary" data-action="stop-feed">Stop</button>' +
+        '</div>';
+      return;
+    }
+
+    if (editing && editing.mode === 'new' && editing.type === 'Breastfeed'){
+      el.className = 'row row-active';
+      el.innerHTML = renderFeedForm(editing);
+      return;
+    }
+
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    var lastSide = getLastFeedSide();
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Breastfeed</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">' + (lastSide ? 'Last was ' + lastSide.toLowerCase() : 'Choose a side') + '</div></div>' +
+      '<div class="row-actions-col" style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">' +
+        '<div class="row-actions" style="display:flex; gap:6px;">' +
+          '<button class="btn' + (lastSide==='RIGHT'?' btn--gold':'') + '" data-action="start-feed" data-side="LEFT">Left</button>' +
+          '<button class="btn' + (lastSide==='LEFT'?' btn--gold':'') + '" data-action="start-feed" data-side="RIGHT">Right</button>' +
+        '</div>' +
+        '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline;" data-action="open-new" data-type="Breastfeed">log manually</button>' +
+      '</div>';
+  }
+
+  function sideChip(field, value, d, label){
+    var selected = d[field] === value;
+    return '<button class="chip-btn' + (selected?' active':'') + '" data-side-field="' + field + '" data-side-value="' + value + '">' + label + '</button>';
+  }
+
+  function renderFeedForm(d){
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Breastfeed ' + formTag(d) + '</div>' +
+        '<div class="form-group"><label>Start Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-group"><label>Began On</label><div class="chip-group">' + sideChip('beginSide','LEFT',d,'Left') + sideChip('beginSide','RIGHT',d,'Right') + '</div></div>' +
+        '<div class="form-group"><label>Ended On</label><div class="chip-group">' + sideChip('endSide','LEFT',d,'Left') + sideChip('endSide','RIGHT',d,'Right') + '</div></div>' +
+        '<div class="form-row-2col">' +
+          '<div class="form-group"><label>Left (min)</label><input type="number" min="0" inputmode="numeric" class="form-control" value="' + d.leftMin + '" data-edit="leftMin"></div>' +
+          '<div class="form-group"><label>Right (min)</label><input type="number" min="0" inputmode="numeric" class="form-control" value="' + d.rightMin + '" data-edit="rightMin"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode) +
+      '</div>'
+    );
+  }
+
+  // ---------- Bottlefeed Section ----------
+  function renderBottleRow(){
+    var el = document.getElementById('rowBottle');
+    if (editing && editing.mode === 'new' && editing.type === 'Bottlefeed'){
+      el.className = 'row row-active';
+      el.innerHTML = renderBottleForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Bottlefeed</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Breast milk or Formula</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="Bottlefeed">\uFF0B Log</button>';
+  }
+
+  function renderBottleForm(d){
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Bottlefeed ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        attrGroup('Milk Type','milkType',['Breast Milk','Formula'], d) +
+        '<div class="form-row-2col">' +
+          '<div class="form-group"><label>Amount (oz)</label><input type="number" step="0.5" min="0" inputmode="decimal" class="form-control" value="' + (d.amountOz||'') + '" data-edit="amountOz"></div>' +
+          '<div class="form-group"><label>Amount (ml)</label><input type="number" step="5" min="0" inputmode="numeric" class="form-control" value="' + (d.amountMl||'') + '" data-edit="amountMl"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, 'Log', !d.milkType) +
+      '</div>'
+    );
+  }
+
+  function attrGroup(title, group, options, d){
+    return '<div class="form-group"><label>' + title + '</label><div class="chip-group">' +
+      options.map(function(opt){
+        var selected = d[group] === opt;
+        return '<button class="chip-btn' + (selected?' active':'') + '" data-group="' + group + '" data-value="' + opt + '">' + opt + '</button>';
+      }).join('') +
+    '</div></div>';
+  }
+
+  function renderDiaperForm(d){
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Diaper ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        attrGroup('Type','diaperType',['Wet','Dirty','Dirty Wet'], d) +
+        attrGroup('Color','color',['Yellow','Green','Brown','Black','Red'], d) +
+        attrGroup('Texture','texture',['Seedy','Mushy','Runny','Watery','Hard'], d) +
+        attrGroup('Size','size',['Small','Medium','Large'], d) +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, 'Log', !d.diaperType) +
+      '</div>'
+    );
+  }
+
+  // ---------- Growth / Measurements ----------
+  function renderGrowthRow(){
+    var el = document.getElementById('rowGrowth');
+    if (editing && editing.mode === 'new' && editing.type === 'Growth'){
+      el.className = 'row row-active';
+      el.innerHTML = renderGrowthForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Growth / Temp</div>' +
+      '<div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Weight, Height, Temperature</div>' +
+      '<button class="btn" style="font-size:0.8rem; border:none; background:none; text-decoration:underline; padding:0; margin-top:2px; color:var(--rose-deep,#a35252);" id="openGrowthChartBtn">\u263A View Growth Chart</button>' +
+      '</div>' +
+      '<button class="btn" data-action="open-new" data-type="Growth">\uFF0B Log</button>';
+  }
+
+  function renderGrowthForm(d){
+    var hasAtLeastOne = (d.weightLbs || d.heightIn || d.tempF);
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">Growth / Temp ' + (d.mode==='edit' ? formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Time</label><input type="datetime-local" class="form-control" value="' + toLocalInputValue(d.startMs) + '" data-edit="startMs"></div>' +
+        '<div class="form-row-3col">' +
+          '<div class="form-group"><label>Weight (lbs)</label><input type="number" step="0.1" min="0" inputmode="decimal" class="form-control" placeholder="e.g. 14.5" value="' + (d.weightLbs||'') + '" data-edit="weightLbs"></div>' +
+          '<div class="form-group"><label>Height (in)</label><input type="number" step="0.25" min="0" inputmode="decimal" class="form-control" placeholder="e.g. 24.5" value="' + (d.heightIn||'') + '" data-edit="heightIn"></div>' +
+          '<div class="form-group"><label>Temp (\u00b0F)</label><input type="number" step="0.1" min="90" max="110" inputmode="decimal" class="form-control" placeholder="e.g. 98.6" value="' + (d.tempF||'') + '" data-edit="tempF"></div>' +
+        '</div>' +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note||'') + '" data-edit="note"></div>' +
+        formActions(d.mode, 'Log', !hasAtLeastOne) +
+      '</div>'
+    );
+  }
+
+  function renderEntryForm(d){
+    if (d.type === 'Sleep') return renderSleepForm(d);
