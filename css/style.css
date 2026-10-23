@@ -4,11 +4,11 @@
    ========================================================================== */
 
 :root {
-  /* Color — a watercolor palette, not the default cream/terracotta pairing */
-  --paper: #fbf3ec;          /* warm blush paper, base background */
-  --paper-deep: #f4e5da;    /* deeper paper for alternating bands */
+  /* Color — watercolor palette */
+  --paper: #fbf3ec;           /* warm blush paper, base background */
+  --paper-deep: #f4e5da;     /* deeper paper for alternating bands */
   --ink: #2b211c;            /* warm near-black brown, primary text */
-  --ink-soft: #6a5952;      /* secondary text */
+  --ink-soft: #6a5952;       /* secondary text */
   --rose: #c97b84;           /* dusty rose, primary accent */
   --rose-deep: #a85d68;      /* rose for hover / emphasis */
   --gold: #d9a441;           /* ochre gold, warmth + highlights */
@@ -47,7 +47,7 @@ body {
   position: relative;
 }
 
-/* Subtle paper grain, applied once, fixed — not per-section */
+/* Subtle paper grain background */
 body::before {
   content: "";
   position: fixed;
@@ -132,7 +132,7 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
-/* ---------- Watercolor blob backdrop (hero use) ---------- */
+/* ---------- Backdrop ---------- */
 .bloom {
   position: absolute;
   inset: 0;
@@ -158,7 +158,6 @@ button:focus-visible {
   to { opacity: 0.34; transform: scale(1); }
 }
 
-/* ---------- Doodle accent — a small hand-drawn mark, used sparingly ---------- */
 .doodle { display: block; margin: 0 auto 16px; }
 .doodle--start { margin: 0 0 12px; }
 
@@ -182,7 +181,6 @@ button:focus-visible {
 .age-counter__num { font-family: var(--font-display); font-size: 1.15rem; color: var(--rose-deep); }
 .age-counter__label { display: block; font-size: 0.85rem; color: var(--ink-soft); margin-top: 2px; }
 
-/* ---------- Stat figure — a number + short caption, same family as age-counter ---------- */
 .stat {
   display: inline-block;
   text-align: center;
@@ -209,7 +207,6 @@ button:focus-visible {
   margin: 2px auto 0;
 }
 
-/* ---------- Callout — a note or heads-up, longer than a .todo badge ---------- */
 .callout {
   display: block;
   margin: 14px 0;
@@ -223,7 +220,6 @@ button:focus-visible {
 }
 .callout strong { color: var(--rose-deep); }
 
-/* ---------- In-page jump links — plain and wrapping, matching the footer's style ---------- */
 .jump {
   text-align: center;
   font-size: 0.9rem;
@@ -237,7 +233,6 @@ button:focus-visible {
 .jump a:hover { text-decoration: underline; }
 .jump .sep { margin: 0 6px; color: var(--line); }
 
-/* ---------- Sections / bands ---------- */
 .band { padding: 56px 0; position: relative; }
 .band--deep { background: var(--paper-deep); }
 .band--plum { background: var(--plum); color: #f4e9ea; }
@@ -248,7 +243,6 @@ button:focus-visible {
 .section-head { margin-bottom: 28px; }
 .section-head p { margin: 0; }
 
-/* ---------- Cards (varied, not identical SaaS tiles) ---------- */
 .card {
   background: var(--card);
   padding: 30px 28px;
@@ -281,7 +275,6 @@ button:focus-visible {
 .event-card h3 { margin-bottom: 6px; }
 .event-card p { margin: 0; color: var(--ink-soft); }
 
-/* ---------- Buttons ---------- */
 .btn {
   display: inline-block;
   text-decoration: none;
@@ -303,158 +296,9 @@ button:focus-visible {
 .btn--outline:hover { background: rgba(255,255,255,0.12); }
 .btn--pine { background: var(--pine-deep); color: #f2f6ee; }
 .btn--pine:hover { background: var(--pine); }
+.btn--danger { background: #b33939; color: #fff; }
+.btn--danger:hover { background: #8e2a2a; }
 
-/* ---------- Video grid ---------- */
-.video-grid {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.video-card {
-  flex: 0 0 300px;
-  scroll-snap-align: start;
-  background: var(--card);
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-}
-.video-card__frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 9 / 16;
-  background: linear-gradient(160deg, var(--paper-deep), var(--gold-soft));
-  padding: 10px;
-}
-.video-card__frame iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 8px;
-  display: block;
-}
-.video-card__caption { padding: 14px 16px; }
-.video-card__caption span { display: block; font-size: 0.82rem; color: var(--rose-deep); font-family: var(--font-display); margin-bottom: 2px; }
-
-/* Scrollbar styling for horizontal video grid */
-.video-grid::-webkit-scrollbar { height: 8px; }
-.video-grid::-webkit-scrollbar-track { background: var(--paper-deep); border-radius: 4px; }
-.video-grid::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
-
-/* ---------- Menu tabs (event page) ---------- */
-.menu-tabs { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-.menu-tab {
-  padding: 9px 20px;
-  border-radius: 999px;
-  border: 2px solid var(--pine-deep);
-  background: transparent;
-  color: var(--pine-deep);
-  font-family: var(--font-body);
-  font-weight: 600;
-  cursor: pointer;
-}
-.menu-tab[aria-selected="true"] { background: var(--pine-deep); color: #f2f6ee; }
-.menu-panel { display: none; }
-.menu-panel[data-active="true"] { display: block; }
-.menu-panel ul { padding-left: 20px; margin: 0; }
-.menu-panel li { margin-bottom: 6px; }
-
-/* ---------- Programming schedule (a real sequence — numbering earned) ---------- */
-.schedule { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
-.schedule li {
-  position: relative;
-  padding: 2px 0 22px 26px;
-}
-.schedule li::before {
-  content: "";
-  position: absolute;
-  left: -7px;
-  top: 6px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--gold);
-  border: 2px solid var(--paper);
-}
-.schedule time {
-  display: block;
-  font-family: var(--font-display);
-  color: var(--rose-deep);
-  font-size: 0.95rem;
-  margin-bottom: 2px;
-}
-
-/* ---------- Logistics list ---------- */
-.logistics dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; margin: 0; }
-.logistics dt { font-weight: 600; color: var(--ink-soft); }
-.logistics dd { margin: 0; }
-
-/* ---------- Growing tree timeline ---------- */
-.tree {
-  position: relative;
-  padding-left: 34px;
-}
-.tree::before {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(var(--pine), var(--pine-deep));
-  border-radius: 3px;
-}
-.tree__node { position: relative; padding-bottom: 30px; }
-.tree__node:last-child { padding-bottom: 0; }
-.tree__node::before {
-  content: "\1F343"; /* leaf */
-  position: absolute;
-  left: -34px;
-  top: -2px;
-  font-size: 1.1rem;
-}
-.tree__node time { display: block; font-family: var(--font-display); color: var(--pine-deep); margin-bottom: 2px; }
-.tree__node p { margin: 0; color: var(--ink-soft); }
-
-/* ---------- Two-up callout (used on event pages for paired actions) ---------- */
-.duo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-@media (max-width: 640px) { .duo { grid-template-columns: 1fr; } }
-.duo .card { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
-
-/* ---------- Forms / wishes ---------- */
-.form-embed {
-  background: var(--card);
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  padding: 8px;
-  min-height: 420px;
-}
-.form-embed iframe { width: 100%; height: 480px; border: 0; border-radius: 14px; }
-.form-embed__placeholder {
-  padding: 60px 24px;
-  text-align: center;
-  color: var(--ink-soft);
-}
-
-/* ---------- Rotating wish banner ---------- */
-.wish-banner {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-style: italic;
-  max-width: 46ch;
-  margin: 0 auto;
-  min-height: 2.6em;
-  transition: opacity 0.5s ease;
-}
-.wish-banner.is-fading { opacity: 0; }
-
-/* ---------- Footer ---------- */
 .site-footer {
   padding: 40px 24px 60px;
   text-align: center;
@@ -463,7 +307,6 @@ button:focus-visible {
 }
 .site-footer a { color: var(--pine-deep); }
 
-/* ---------- Utility ---------- */
 .mt-lg { margin-top: 34px; }
 .center { text-align: center; }
 .todo {
