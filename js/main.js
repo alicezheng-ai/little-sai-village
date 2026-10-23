@@ -1,112 +1,330 @@
-/* ==========================================================================
-   Little Sai and His Village of Love — shared behavior
-   ========================================================================== */
+// ==========================================
+// CONFIGURATION & CONSTANTS
+// ==========================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLlfOHMFPxUWpjqA63xhQdLYod2HEn-n3D4mnzCwdTQX9CiL6hqqhP4KO913stS1qz/exec";[cite: 2]
+const CACHE_KEY_LOGS = "jujube_recent_logs";
+const CACHE_KEY_GROWTH = "jujube_growth_data";
 
-// Sai's birth moment. Used only to power the live age counter's math below —
-// never printed on the page. Format: ISO 8601 with UTC offset, so it parses
-// correctly regardless of the visitor's own timezone.
-const SAI_BIRTH = new Date("2026-06-12T19:51:00-07:00");
+// Unit Conversion Helpers
+const KG_TO_LBS = 2.20462;
+const CM_TO_INCH = 0.393701;
 
-/* ---------- Live age counter (home page hero) ---------- */
-function renderAge() {
-  const el = document.querySelector("[data-age-counter]");
-  if (!el) return;
+// ==========================================
+// STATE MANAGEMENT
+// ==========================================
+let appState = {
+  recentLogs: [],
+  growthLogs: [],
+  displayUnitSystem: 'metric' // 'metric' (kg / cm) or 'imperial' (lbs / in)
+};
 
-  const now = new Date();
-  let months = (now.getFullYear() - SAI_BIRTH.getFullYear()) * 12 + (now.getMonth() - SAI_BIRTH.getMonth());
-  const anchor = new Date(SAI_BIRTH);
-  anchor.setMonth(anchor.getMonth() + months);
-  if (anchor > now) {
-    months -= 1;
-    anchor.setMonth(anchor.getMonth() - 1);
-  }
-  const dayMs = 1000 * 60 * 60 * 24;
-  const days = Math.floor((now - anchor) / dayMs);
-  const totalDays = Math.floor((now - SAI_BIRTH) / dayMs);
+// ==========================================
+// INITIALIZATION
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  loadCachedData();
+  fetchAllData();
+  setupUnitToggleListeners();
+});
 
-  const monthLabel = months === 1 ? "month" : "months";
-  const dayLabel = days === 1 ? "day" : "days";
+/**
+ * Sets up event listeners for metric/imperial chart toggles if present.
+ */
+function setupUnitToggleListeners() {
+  const metricBtn = document.getElementById("unit-toggle-metric");
+  const imperialBtn = document.getElementById("unit-toggle-imperial");
 
-  el.innerHTML =
-    `<span class="age-counter__num">${months} ${monthLabel}, ${days} ${dayLabel} old</span>` +
-    `<span class="age-counter__label">${totalDays.toLocaleString()} days, and counting</span>`;
-}
-
-/* ---------- Growing tree timeline ----------
-   Add a line here for every milestone — first celebration, first steps,
-   whatever the village wants remembered — and it grows the tree on the
-   home page automatically. Keep entries in order.
-   `date` only controls sort order and is never shown as-is; set `display`
-   to whatever text should actually appear (kept vague for Sai's birthday
-   on purpose — no exact date is shown anywhere on the site). */
-const MILESTONES = [
-  { date: "2026-06", display: "Mid-June 2026", label: "Born", note: "Born under Pacific Northwest's evergreens, China on one side and India on the other — the very start of the tree." },
-  { date: "2026-09-19", display: "September 19, 2026", label: "100 Days — his first branch", note: "A traditional Chinese milestone: the village's first gathering for him, red eggs and longevity noodles included. Details on the Events page." },
-  // { date: "YYYY-MM-DD", display: "Month Day, Year", label: "Next milestone", note: "One line about it." },
-];
-
-function renderTree() {
-  const el = document.querySelector("[data-tree]");
-  if (!el) return;
-  el.innerHTML = MILESTONES.map((m) => {
-    return `<li class="tree__node"><time datetime="${m.date}">${m.display}</time><strong>${m.label}</strong><p>${m.note}</p></li>`;
-  }).join("");
-}
-
-/* ---------- Menu tabs (vegetarian / non-vegetarian) ---------- */
-function initMenuTabs() {
-  const tabGroups = document.querySelectorAll("[data-menu-tabs]");
-  tabGroups.forEach((group) => {
-    const tabs = group.querySelectorAll(".menu-tab");
-    const panels = group.parentElement.querySelectorAll(".menu-panel");
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.setAttribute("aria-selected", "false"));
-        tab.setAttribute("aria-selected", "true");
-        const target = tab.getAttribute("data-target");
-        panels.forEach((p) => p.setAttribute("data-active", String(p.id === target)));
-      });
+  if (metricBtn) {
+    metricBtn.addEventListener("click", () => {
+      appState.displayUnitSystem = 'metric';
+      renderGrowthChart(appState.growthLogs);
     });
-  });
+  }
+
+  if (imperialBtn) {
+    imperialBtn.addEventListener("click", () => {
+      appState.displayUnitSystem = 'imperial';
+      renderGrowthChart(appState.growthLogs);
+    });
+  }
 }
 
-/* ---------- Rotating wish banner (wishes page) ----------
-   Add a short line for every wish you want to feature — no names, just the
-   message itself. Leave the array empty and the section quietly hides
-   itself until you add some. */
-const WISHES = [
-  // "May you always find your way back to the people who love you.",
-  // "Grow up curious, kind, and a little bit stubborn — it'll serve you well.",
-];
+/**
+ * Loads cached data from Local Storage for instant UI rendering.
+ */
+function loadCachedData() {
+  const cachedLogs = localStorage.getItem(CACHE_KEY_LOGS);
+  const cachedGrowth = localStorage.getItem(CACHE_KEY_GROWTH);
 
-function renderWishBanner() {
-  const el = document.querySelector("[data-wish-banner]");
-  if (!el) return;
-  const section = el.closest("section");
-  if (!WISHES.length) {
-    if (section) section.style.display = "none";
+  if (cachedLogs) {
+    try {
+      appState.recentLogs = JSON.parse(cachedLogs);
+      renderRecentLogs(appState.recentLogs);
+    } catch (e) {
+      console.error("Error parsing cached logs", e);
+    }
+  }
+
+  if (cachedGrowth) {
+    try {
+      appState.growthLogs = JSON.parse(cachedGrowth);
+      renderGrowthChart(appState.growthLogs);
+    } catch (e) {
+      console.error("Error parsing cached growth data", e);
+    }
+  }
+}
+
+// ==========================================
+// API FETCHING FUNCTIONS
+// ==========================================
+
+/**
+ * Fetches recent activity logs and dedicated growth history concurrently from Apps Script.
+ */
+async function fetchAllData() {
+  try {
+    const [recentResponse, growthResponse] = await Promise.all([
+      fetch(`${SCRIPT_URL}?action=recent&limit=50`),
+      fetch(`${SCRIPT_URL}?action=growth`)
+    ]);
+
+    const recentData = await recentResponse.json();
+    const growthData = await growthResponse.json();
+
+    if (recentData.ok && Array.isArray(recentData.entries)) {
+      appState.recentLogs = recentData.entries;
+      localStorage.setItem(CACHE_KEY_LOGS, JSON.stringify(recentData.entries));
+      renderRecentLogs(appState.recentLogs);
+    }
+
+    if (growthData.ok && Array.isArray(growthData.entries)) {
+      appState.growthLogs = growthData.entries;
+      localStorage.setItem(CACHE_KEY_GROWTH, JSON.stringify(growthData.entries));
+      renderGrowthChart(appState.growthLogs);
+    }
+  } catch (error) {
+    console.error("Failed to sync with Google Apps Script backend:", error);
+  }
+}
+
+// ==========================================
+// UI & LOG RENDERING
+// ==========================================
+
+/**
+ * Renders recent activity entries list.
+ */
+function renderRecentLogs(entries) {
+  const container = document.getElementById("recent-logs-list");
+  if (!container) return;
+
+  if (!entries || entries.length === 0) {
+    container.innerHTML = "<p>No recent activity logs found.</p>";
     return;
   }
 
-  let i = Math.floor(Math.random() * WISHES.length);
-  const show = (index) => { el.textContent = `“${WISHES[index]}”`; };
-  show(i);
+  container.innerHTML = entries.map(entry => `
+    <div class="log-card">
+      <div class="log-header">
+        <strong>${escapeHtml(entry['Type'] || 'Log')}</strong>
+        <span class="log-time">${escapeHtml(entry['Start Date/time'] || '')}</span>
+      </div>
+      <div class="log-details">
+        ${getLogDetailSummary(entry)}
+      </div>
+    </div>
+  `).join('');
+}
 
-  if (WISHES.length > 1) {
-    setInterval(() => {
-      el.classList.add("is-fading");
-      setTimeout(() => {
-        i = (i + 1) % WISHES.length;
-        show(i);
-        el.classList.remove("is-fading");
-      }, 500);
-    }, 5000);
+/**
+ * Formats row values into a readable summary based on activity type.
+ */
+function getLogDetailSummary(entry) {
+  const type = entry['Type'];
+  if (type === 'Diaper') {
+    return `Type: ${escapeHtml(entry['[Diaper] Type'] || 'N/A')}`;
+  }
+  if (type === 'Sleep') {
+    const durationMins = Math.round((Number(entry['[Sleep] Duration (Seconds)']) || 0) / 60);
+    return `Duration: ${durationMins} mins`;
+  }
+  if (type === 'Breastfeed') {
+    const leftMins = Math.round((Number(entry['[Breastfeed] Left Duration (Seconds)']) || 0) / 60);
+    const rightMins = Math.round((Number(entry['[Breastfeed] Right Duration (Seconds)']) || 0) / 60);
+    return `Left: ${leftMins}m, Right: ${rightMins}m`;
+  }
+  if (type === 'Bottle Feed') {
+    return `Volume: ${entry['[Bottle Feed] Volume'] || 0} ${entry['[Bottle Feed] Volume Unit'] || 'oz'}`;
+  }
+  if (type === 'Growth') {
+    return `Weight: ${entry['[Growth] Weight'] || '-'} ${entry['[Growth] Weight Unit'] || ''}, Height: ${entry['[Growth] Height'] || '-'} ${entry['[Growth] Height Unit'] || ''}`;
+  }
+  return escapeHtml(entry['Note'] || '');
+}
+
+// ==========================================
+// UNIT CONVERSION FUNCTIONS
+// ==========================================
+
+function normalizeWeight(val, unit, targetSystem) {
+  if (val === "" || val === undefined || val === null || isNaN(val)) return null;
+  const num = Number(val);
+  const u = String(unit || '').toLowerCase().trim();
+
+  // Convert input to KG first
+  let kg = num;
+  if (u === 'lb' || u === 'lbs' || u === 'pound' || u === 'pounds') {
+    kg = num / KG_TO_LBS;
+  }
+
+  // Return requested display unit
+  return targetSystem === 'imperial' ? kg * KG_TO_LBS : kg;
+}
+
+function normalizeHeight(val, unit, targetSystem) {
+  if (val === "" || val === undefined || val === null || isNaN(val)) return null;
+  const num = Number(val);
+  const u = String(unit || '').toLowerCase().trim();
+
+  // Convert input to CM first
+  let cm = num;
+  if (u === 'in' || u === 'inch' || u === 'inches' || u === '"') {
+    cm = num / CM_TO_INCH;
+  }
+
+  // Return requested display unit
+  return targetSystem === 'imperial' ? cm * CM_TO_INCH : cm;
+}
+
+// ==========================================
+// DUAL-UNIT CHART RENDERING
+// ==========================================
+
+/**
+ * Parses, converts, and displays growth data on a dual-axis chart.
+ */
+function renderGrowthChart(growthEntries) {
+  const chartCanvas = document.getElementById("growthChart");
+  if (!chartCanvas) return;
+
+  // Sort growth entries chronologically by Epoch timestamp
+  const sortedEntries = [...growthEntries].sort((a, b) => {
+    return (Number(a['Start Date/time (Epoch)']) || 0) - (Number(b['Start Date/time (Epoch)']) || 0);
+  });
+
+  const labels = [];
+  const weightData = [];
+  const heightData = [];
+
+  const system = appState.displayUnitSystem; // 'metric' or 'imperial'
+
+  sortedEntries.forEach(row => {
+    const dateStr = row['Start Date/time'] ? row['Start Date/time'].split(' ')[0] : '';
+    labels.push(dateStr);
+
+    const normWeight = normalizeWeight(row['[Growth] Weight'], row['[Growth] Weight Unit'], system);
+    const normHeight = normalizeHeight(row['[Growth] Height'], row['[Growth] Height Unit'], system);
+
+    weightData.push(normWeight !== null ? Number(normWeight.toFixed(2)) : null);
+    heightData.push(normHeight !== null ? Number(normHeight.toFixed(2)) : null);
+  });
+
+  // Destroy previous Chart.js instance to prevent overlapping renders
+  if (window.jujubeGrowthChart) {
+    window.jujubeGrowthChart.destroy();
+  }
+
+  const weightUnitLabel = system === 'imperial' ? 'Weight (lbs)' : 'Weight (kg)';
+  const heightUnitLabel = system === 'imperial' ? 'Height (in)' : 'Height (cm)';
+
+  if (typeof Chart !== 'undefined') {
+    window.jujubeGrowthChart = new Chart(chartCanvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: weightUnitLabel,
+            data: weightData,
+            borderColor: '#4e73df',
+            backgroundColor: 'rgba(78, 115, 223, 0.08)',
+            tension: 0.2,
+            spanGaps: true,
+            yAxisID: 'yWeight'
+          },
+          {
+            label: heightUnitLabel,
+            data: heightData,
+            borderColor: '#1cc88a',
+            backgroundColor: 'rgba(28, 200, 138, 0.08)',
+            tension: 0.2,
+            spanGaps: true,
+            yAxisID: 'yHeight'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const rawVal = context.raw;
+                if (rawVal === null) return null;
+                if (context.dataset.yAxisID === 'yWeight') {
+                  const alt = system === 'imperial' ? (rawVal / KG_TO_LBS).toFixed(2) + ' kg' : (rawVal * KG_TO_LBS).toFixed(2) + ' lbs';
+                  return `${context.dataset.label}: ${rawVal} (${alt})`;
+                } else {
+                  const alt = system === 'imperial' ? (rawVal / CM_TO_INCH).toFixed(2) + ' cm' : (rawVal * CM_TO_INCH).toFixed(2) + ' in';
+                  return `${context.dataset.label}: ${rawVal} (${alt})`;
+                }
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Date' }
+          },
+          yWeight: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: {
+              display: true,
+              text: system === 'imperial' ? 'Weight (lbs)' : 'Weight (kg)'
+            }
+          },
+          yHeight: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            title: {
+              display: true,
+              text: system === 'imperial' ? 'Height (in)' : 'Height (cm)'
+            }
+          }
+        }
+      }
+    });
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderAge();
-  renderTree();
-  initMenuTabs();
-  renderWishBanner();
-});
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
