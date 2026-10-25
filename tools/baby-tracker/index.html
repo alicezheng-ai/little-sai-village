@@ -162,6 +162,21 @@
   .site-nav {
     padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
   }
+
+  /* Growth & temp: a value box with its unit picker beside it */
+  .input-with-unit {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .input-with-unit .form-control:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+  .input-with-unit .unit-select {
+    flex: 0 0 auto;
+    width: 84px;
+  }
 </style>
 
 </head>
@@ -192,6 +207,7 @@
     <div class="row" id="rowDiaper"></div>
     <div class="row" id="rowBath"></div>
     <div class="row" id="rowMedicine"></div>
+    <div class="row" id="rowGrowth"></div>
   </div>
 
   <div class="card" style="margin-bottom: 24px;">
@@ -200,6 +216,16 @@
       <button class="tab-btn" data-range="24h" style="flex:1; background:none; border:none; padding:12px; font-weight:600; cursor:pointer;">Last 24h</button>
     </div>
     <div class="summary-body" id="summaryBody"></div>
+  </div>
+
+  <div class="card" id="growthCard" style="margin-bottom: 24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+      <h3 style="margin:0;">Growth</h3>
+      <div class="chip-group" id="chartSystemToggle"></div>
+    </div>
+    <div class="chip-group" id="chartMetricTabs" style="margin-bottom:8px;"></div>
+    <div id="growthChartWrap" style="color: var(--ink, #332a24);"></div>
+    <div id="growthLatest" style="font-size:0.85rem; opacity:0.8; margin-top:8px;"></div>
   </div>
 
   <h3 style="margin-bottom: 12px;">Recent</h3>
@@ -226,6 +252,10 @@
   var K_TIMERS = 'jujube_timers_v2';
   var K_PENDING = 'jujube_pending_sync';
   var K_CACHE = 'jujube_recent_cache';
+  var K_GROWTH = 'jujube_growth_cache';
+  var K_CHART = 'jujube_chart_prefs';
+  var K_UNITS = 'jujube_unit_prefs';
+  var K_LAST = 'jujube_last_seen';
 
   // ---------- Transient UI state ----------
   var editing = null; 
@@ -327,7 +357,7 @@
   function addCacheEntry(entry){
     var cache = getCache();
     cache.unshift(entry);
-    setCache(cache.slice(0, 30));
+    setCache(cache.slice(0, 60));
   }
   function updateCacheEntry(key, entry){
     var cache = getCache();
@@ -349,6 +379,409 @@
     return null;
   }
 
+  // ---------- Growth & temperature ----------
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function toDateInputValue(ms){
+    var d = new Date(ms);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  }
+  function shortDate(ms){ var d = new Date(ms); return MONTHS[d.getMonth()] + ' ' + d.getDate(); }
+  function numOrNull(v){
+    if (v === '' || v === null || v === undefined) return null;
+    var n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  }
+  function fmtField(v){ var n = numOrNull(v); return n === null ? '' : String(Math.round(n*100)/100); }
+  function fmtVal(v){ return (Math.round(v*10)/10).toFixed(1); }
+
+  function normUnit(u){
+    u = String(u || '').toUpperCase().replace(/[^A-Z]/g, '');
+    if (u === 'LBS') u = 'LB';
+    if (u === 'INCH' || u === 'INCHES') u = 'IN';
+    if (u === 'FAHRENHEIT') u = 'F';
+    if (u === 'CELSIUS') u = 'C';
+    return u;
+  }
+  var UNIT_LABEL = { LB:'lb', KG:'kg', IN:'in', CM:'cm', F:'\u00b0F', C:'\u00b0C' };
+
+  function convertValue(kind, v, fromUnit, toUnit){
+    fromUnit = normUnit(fromUnit); toUnit = normUnit(toUnit);
+    if (!fromUnit || fromUnit === toUnit) return v;
+    if (kind === 'weight'){
+      if (fromUnit === 'LB' && toUnit === 'KG') return v * 0.45359237;
+      if (fromUnit === 'KG' && toUnit === 'LB') return v / 0.45359237;
+    } else if (kind === 'height'){
+      if (fromUnit === 'IN' && toUnit === 'CM') return v * 2.54;
+      if (fromUnit === 'CM' && toUnit === 'IN') return v / 2.54;
+    } else if (kind === 'temp'){
+      if (fromUnit === 'F' && toUnit === 'C') return (v - 32) * 5 / 9;
+      if (fromUnit === 'C' && toUnit === 'F') return v * 9 / 5 + 32;
+    }
+    return v;
+  }
+
+  // A sheet row is a growth point if it is a Growth row, or a Medical row that
+  // carries a temperature and no medication (medication rows are Medicine doses).
+  function entryToGrowthPoint(e){
+    if (!e) return null;
+    var type = e['Type'];
+    var epoch = Number(e['Start Date/time (Epoch)']) || Date.parse(e['Start Date/time']);
+    if (!epoch) return null;
+    if (type === 'Growth'){
+      var w = numOrNull(e['[Growth] Weight']), h = numOrNull(e['[Growth] Height']);
+      if (w === null && h === null) return null;
+      return { key: e['_activityKey'], epoch: epoch,
+        weight: w, weightUnit: normUnit(e['[Growth] Weight Unit']) || 'LB',
+        height: h, heightUnit: normUnit(e['[Growth] Height Unit']) || 'IN' };
+    }
+    if (type === 'Medical' && !e['[Medical] Medication']){
+      var t = numOrNull(e['[Medical] Temperature']);
+      if (t === null) return null;
+      return { key: e['_activityKey'], epoch: epoch, temp: t, tempUnit: normUnit(e['[Medical] Temperature Unit']) || 'F' };
+    }
+    return null;
+  }
+
+  function getGrowthCache(){ try { return JSON.parse(localStorage.getItem(K_GROWTH)) || []; } catch(e){ return []; } }
+  function setGrowthCache(list){ localStorage.setItem(K_GROWTH, JSON.stringify(list)); }
+  function growthCacheUpsert(entry){
+    var p = entryToGrowthPoint(entry);
+    var list = getGrowthCache().filter(function(x){ return x.key !== entry['_activityKey']; });
+    if (p) list.push(p);
+    setGrowthCache(list);
+  }
+  function growthCacheRemove(key){
+    setGrowthCache(getGrowthCache().filter(function(x){ return x.key !== key; }));
+  }
+
+  function getUnitPrefs(){
+    var p = {};
+    try { p = JSON.parse(localStorage.getItem(K_UNITS)) || {}; } catch(e){}
+    return { weight: p.weight || 'LB', height: p.height || 'IN', temp: p.temp || 'F' };
+  }
+  function setUnitPrefs(p){ localStorage.setItem(K_UNITS, JSON.stringify(p)); }
+
+  var chartPrefs = (function(){
+    var p = {};
+    try { p = JSON.parse(localStorage.getItem(K_CHART)) || {}; } catch(e){}
+    return { metric: p.metric || 'weight', system: p.system || 'imperial' };
+  })();
+  function saveChartPrefs(){ try { localStorage.setItem(K_CHART, JSON.stringify(chartPrefs)); } catch(e){} }
+
+  function chartTarget(metric, system){
+    if (metric === 'weight') return system === 'metric' ? 'KG' : 'LB';
+    if (metric === 'height') return system === 'metric' ? 'CM' : 'IN';
+    return system === 'metric' ? 'C' : 'F';
+  }
+
+  function growthSeries(metric, system){
+    var target = chartTarget(metric, system);
+    var out = [];
+    getGrowthCache().forEach(function(p){
+      var v = p[metric];
+      if (v === null || v === undefined) return;
+      out.push({ key: p.key, epoch: p.epoch, v: convertValue(metric, v, p[metric + 'Unit'], target) });
+    });
+    out.sort(function(a, b){ return a.epoch - b.epoch; });
+    return out;
+  }
+
+  function applyPendingToGrowth(points){
+    getPending().forEach(function(op){
+      var key = op['_activityKey'];
+      points = points.filter(function(x){ return x.key !== key; });
+      if (op['_op'] === 'delete') return;
+      var p = entryToGrowthPoint(op);
+      if (p) points.push(p);
+    });
+    return points;
+  }
+
+  function applyGrowthEntries(entries){
+    var pts = [];
+    entries.forEach(function(e){ var p = entryToGrowthPoint(e); if (p) pts.push(p); });
+    setGrowthCache(applyPendingToGrowth(pts));
+    renderGrowthChart();
+    renderGrowthRow();
+  }
+
+  // ---------- "Last logged" hints (Diaper, Bath) ----------
+  function entryMs(e){ return Number(e['Start Date/time (Epoch)']) || Date.parse(e['Start Date/time']) || 0; }
+
+  function lastKeyOf(e){
+    var t = e['Type'];
+    if (t === 'Sleep') return 'Sleep';
+    if (t === 'Breastfeed') return 'Breastfeed';
+    if (t === 'Bottle Feed') return 'Bottle Feed';
+    if (t === 'Diaper') return 'Diaper';
+    if (t === 'Routine' && e['[Routine] Routine'] === 'Bath') return 'Bath';
+    if (t === 'Medical' && e['[Medical] Medication']) return 'Medicine';
+    return null;
+  }
+
+  function getLastSeen(){ try { return JSON.parse(localStorage.getItem(K_LAST)) || {}; } catch(e){ return {}; } }
+  function setLastSeen(m){ try { localStorage.setItem(K_LAST, JSON.stringify(m)); } catch(e){} }
+
+  function deriveLast(entries){
+    var out = {};
+    entries.forEach(function(e){
+      var key = lastKeyOf(e), ms = entryMs(e);
+      if (!key || !ms) return;
+      if (!out[key] || ms > out[key].epoch) out[key] = { epoch: ms, detail: e['[Diaper] Type'] || '' };
+    });
+    return out;
+  }
+
+  // Newest entry of a kind: the server's per-type "last" (reaches back past the
+  // recent list) combined with anything newer in the local recent cache.
+  function lastOf(key){
+    var best = null, seen = getLastSeen()[key];
+    if (seen && seen.epoch) best = { epoch: seen.epoch, detail: seen.detail || '' };
+    getCache().forEach(function(e){
+      if (lastKeyOf(e) !== key) return;
+      var ms = entryMs(e);
+      if (ms && (!best || ms > best.epoch)) best = { epoch: ms, detail: e['[Diaper] Type'] || '' };
+    });
+    return best;
+  }
+
+  function todayDiaperCounts(){
+    var start = new Date(); start.setHours(0, 0, 0, 0);
+    var s = start.getTime(), c = { n: 0, wet: 0, dirty: 0 };
+    getCache().forEach(function(e){
+      if (e['Type'] !== 'Diaper' || entryMs(e) < s) return;
+      var t = e['[Diaper] Type'];
+      c.n++;
+      if (t === 'Wet' || t === 'Dirty Wet') c.wet++;
+      if (t === 'Dirty' || t === 'Dirty Wet') c.dirty++;
+    });
+    return c;
+  }
+
+  function diaperHintHtml(){
+    var last = lastOf('Diaper');
+    if (!last) return 'Tap to log';
+    var what = last.detail === 'Dirty Wet' ? 'wet + dirty' : String(last.detail || '').toLowerCase();
+    var c = todayDiaperCounts();
+    return 'Last ' + formatRelative(last.epoch) + (what ? ' \u00b7 ' + what : '') + '<br>' +
+      (c.n ? 'Today ' + c.wet + ' wet \u00b7 ' + c.dirty + ' dirty' : 'None today yet');
+  }
+
+  function bathHintHtml(){
+    var last = lastOf('Bath');
+    return last ? 'Last bath ' + formatRelative(last.epoch) : 'Tap to log';
+  }
+
+  function tickHints(){
+    var d = document.getElementById('diaperHint');
+    if (d) d.innerHTML = diaperHintHtml();
+    var b = document.getElementById('bathHint');
+    if (b) b.innerHTML = bathHintHtml();
+  }
+
+  function applyLast(map){
+    setLastSeen(map || {});
+    tickHints();
+  }
+
+  // Ask the backend for growth/temperature rows and per-type last-logged times.
+  // If the deployed script predates those actions, fall back to one scan of
+  // recent rows.
+  function getJson(path){
+    return fetch(CONFIG.APPS_SCRIPT_URL + path).then(function(r){ return r.json(); }).catch(function(){ return null; });
+  }
+  function fetchDerived(){
+    if (!configured) return;
+    Promise.all([getJson('?action=growth'), getJson('?action=last')]).then(function(rs){
+      var g = rs[0], l = rs[1];
+      var gOk = !!(g && g.ok && g.entries), lOk = !!(l && l.ok && l.last);
+      if (gOk) applyGrowthEntries(g.entries);
+      if (lOk) applyLast(l.last);
+      if (gOk && lOk) return;
+      return getJson('?action=recent&limit=500').then(function(h){
+        if (!h || !h.ok) return;
+        if (!gOk) applyGrowthEntries(h.entries);
+        if (!lOk) applyLast(deriveLast(h.entries));
+      });
+    });
+  }
+
+  function hasGrowthValue(d){
+    var w = numOrNull(d.weight), h = numOrNull(d.height), t = numOrNull(d.temp);
+    if (d.type === 'Growth') return w !== null || h !== null;
+    if (d.type === 'Temperature') return t !== null;
+    return w !== null || h !== null || t !== null;
+  }
+
+  function refreshGrowthSave(){
+    if (!editing || ['Growth', 'Temperature', 'GrowthTemp'].indexOf(editing.type) === -1) return;
+    var btn = document.querySelector('.row-active [data-action="save-entry"], .entry-editing [data-action="save-entry"]');
+    if (btn) btn.disabled = !hasGrowthValue(editing);
+  }
+
+  // Today keeps the current time; a past date is stamped at noon; an unchanged
+  // date on an existing entry keeps its original timestamp.
+  function growthStartMs(d){
+    if (!d.dateStr) return d.startMs;
+    if (d.mode === 'edit' && d.dateStr === toDateInputValue(d.startMs)) return d.startMs;
+    if (d.dateStr === toDateInputValue(Date.now())) return Date.now();
+    var p = d.dateStr.split('-').map(Number);
+    return new Date(p[0], p[1]-1, p[2], 12, 0, 0).getTime();
+  }
+
+  function unitSelect(field, options, current){
+    var cur = normUnit(current);
+    return '<select class="form-control unit-select" data-edit="' + field + '">' +
+      options.map(function(o){ return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
+      '</select>';
+  }
+
+  function measureField(label, valueField, unitField, value, unitOptions, unit, step, placeholder){
+    return '<div class="form-group"><label>' + label + '</label><div class="input-with-unit">' +
+      '<input type="number" step="' + step + '" min="0" inputmode="decimal" class="form-control" placeholder="' + placeholder + '" value="' + escapeHtml(value === undefined || value === null ? '' : value) + '" data-edit="' + valueField + '">' +
+      unitSelect(unitField, unitOptions, unit) + '</div></div>';
+  }
+
+  function renderGrowthTempForm(d){
+    var showGrowth = d.type !== 'Temperature';
+    var showTemp = d.type !== 'Growth';
+    var title = d.type === 'Growth' ? 'Growth' : (d.type === 'Temperature' ? 'Temperature' : 'Growth &amp; temp');
+    return (
+      '<div class="form-card">' +
+        '<div class="row-label" style="font-weight:600;">' + title + (d.mode === 'edit' ? ' ' + formTag(d) : '') + '</div>' +
+        '<div class="form-group"><label>Date</label><input type="date" class="form-control" value="' + escapeHtml(d.dateStr || '') + '" data-edit="dateStr"></div>' +
+        (showGrowth ? measureField('Weight', 'weight', 'weightUnit', d.weight, [['LB', 'lbs'], ['KG', 'kg']], d.weightUnit, '0.01', 'e.g. 14.5') +
+                      measureField('Height', 'height', 'heightUnit', d.height, [['IN', 'in'], ['CM', 'cm']], d.heightUnit, '0.1', 'e.g. 24.5') : '') +
+        (showTemp ? measureField('Temperature', 'temp', 'tempUnit', d.temp, [['F', '\u00b0F'], ['C', '\u00b0C']], d.tempUnit, '0.1', 'e.g. 98.6') : '') +
+        '<div class="form-group"><label>Note</label><input type="text" class="form-control" placeholder="optional" value="' + escapeHtml(d.note || '') + '" data-edit="note"></div>' +
+        formActions(d.mode, d.mode === 'edit' ? 'Save' : 'Log', !hasGrowthValue(d)) +
+      '</div>'
+    );
+  }
+
+  function growthRowHint(){
+    var pts = growthSeries('weight', chartPrefs.system);
+    if (!pts.length) return 'Weight, height or temperature';
+    var last = pts[pts.length - 1];
+    return 'Last weight ' + fmtVal(last.v) + ' ' + UNIT_LABEL[chartTarget('weight', chartPrefs.system)] + ' \u00b7 ' + shortDate(last.epoch);
+  }
+
+  function renderGrowthRow(){
+    var el = document.getElementById('rowGrowth');
+    if (!el) return;
+    if (editing && editing.mode === 'new' && editing.type === 'GrowthTemp'){
+      el.className = 'row row-active';
+      el.innerHTML = renderGrowthTempForm(editing);
+      return;
+    }
+    el.className = 'row';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0;';
+    el.innerHTML =
+      '<div><div class="row-label" style="font-weight:600;">Growth &amp; temp</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">' + growthRowHint() + '</div></div>' +
+      '<button class="btn" data-action="open-new" data-type="GrowthTemp">\uFF0B Log</button>';
+  }
+
+  function saveGrowthTemp(){
+    var d = editing;
+    if (!d || !hasGrowthValue(d)) return;
+    var startMs = growthStartMs(d);
+    var note = d.note || '';
+    var made = [];
+    if (numOrNull(d.weight) !== null || numOrNull(d.height) !== null){
+      made.push(buildPayloadFromEditing({ type: 'Growth', startMs: startMs, note: note,
+        weight: d.weight, weightUnit: d.weightUnit, height: d.height, heightUnit: d.heightUnit }));
+      note = '';
+    }
+    if (numOrNull(d.temp) !== null){
+      made.push(buildPayloadFromEditing({ type: 'Temperature', startMs: startMs, note: note,
+        temp: d.temp, tempUnit: d.tempUnit }));
+    }
+    made.forEach(function(p){
+      p['_activityKey'] = uid(); p['_familyKey'] = 'local'; p['_profileKey'] = 'local';
+      addCacheEntry(p);
+      growthCacheUpsert(p);
+      queueOp(p);
+    });
+    setUnitPrefs({ weight: normUnit(d.weightUnit) || 'LB', height: normUnit(d.heightUnit) || 'IN', temp: normUnit(d.tempUnit) || 'F' });
+    editing = null;
+    renderRows(); renderRecent(); renderGrowthChart();
+  }
+
+  // ---------- Growth chart (inline SVG, no external library) ----------
+  var METRIC_LABEL = { weight: 'Weight', height: 'Height', temp: 'Temp' };
+
+  function renderGrowthChart(){
+    var tabs = document.getElementById('chartMetricTabs');
+    var sysEl = document.getElementById('chartSystemToggle');
+    var wrap = document.getElementById('growthChartWrap');
+    var latest = document.getElementById('growthLatest');
+    if (!tabs || !sysEl || !wrap || !latest) return;
+
+    tabs.innerHTML = ['weight', 'height', 'temp'].map(function(m){
+      return '<button class="chip-btn' + (chartPrefs.metric === m ? ' active' : '') + '" data-chart-metric="' + m + '">' + METRIC_LABEL[m] + '</button>';
+    }).join('');
+    sysEl.innerHTML = [['imperial', 'lbs / in'], ['metric', 'kg / cm']].map(function(s){
+      return '<button class="chip-btn' + (chartPrefs.system === s[0] ? ' active' : '') + '" data-chart-system="' + s[0] + '">' + s[1] + '</button>';
+    }).join('');
+
+    var metric = chartPrefs.metric, system = chartPrefs.system;
+    var unit = UNIT_LABEL[chartTarget(metric, system)];
+    var pts = growthSeries(metric, system);
+    if (!pts.length){
+      wrap.innerHTML = '<div style="padding:28px 8px; text-align:center; opacity:0.7; font-size:0.9rem;">No ' + METRIC_LABEL[metric].toLowerCase() + ' entries yet.</div>';
+      latest.textContent = '';
+      return;
+    }
+
+    var W = 340, H = 210, padL = 40, padR = 14, padT = 14, padB = 26;
+    var minX = pts[0].epoch, maxX = pts[pts.length - 1].epoch;
+    if (minX === maxX){ minX -= 3 * 86400000; maxX += 3 * 86400000; }
+    var vals = pts.map(function(p){ return p.v; });
+    var minV = Math.min.apply(null, vals), maxV = Math.max.apply(null, vals);
+    var span = maxV - minV;
+    if (span < 0.0001) span = Math.max(1, Math.abs(maxV) * 0.1);
+    var lo = minV - span * 0.25, hi = maxV + span * 0.25;
+    function X(t){ return padL + (t - minX) / (maxX - minX) * (W - padL - padR); }
+    function Y(v){ return padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB); }
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%; height:auto; display:block;" role="img" aria-label="' + METRIC_LABEL[metric] + ' over time">';
+    for (var i = 0; i <= 3; i++){
+      var gv = lo + (hi - lo) * i / 3, gy = Y(gv);
+      svg += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy.toFixed(1) + '" y2="' + gy.toFixed(1) + '" stroke="currentColor" stroke-opacity="0.12"/>';
+      svg += '<text x="' + (padL - 6) + '" y="' + (gy + 3).toFixed(1) + '" text-anchor="end" font-size="10" fill="currentColor" fill-opacity="0.6">' + fmtVal(gv) + '</text>';
+    }
+    if (pts.length > 1){
+      svg += '<polyline fill="none" style="stroke:var(--rose-deep,#a35252)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="' +
+        pts.map(function(p){ return X(p.epoch).toFixed(1) + ',' + Y(p.v).toFixed(1); }).join(' ') + '"/>';
+    }
+    pts.forEach(function(p, idx){
+      var cx = X(p.epoch), cy = Y(p.v);
+      svg += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="3.5" style="fill:var(--rose-deep,#a35252)"/>';
+      if (pts.length <= 8 || idx === pts.length - 1){
+        svg += '<text x="' + cx.toFixed(1) + '" y="' + (cy - 9).toFixed(1) + '" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.85">' + fmtVal(p.v) + '</text>';
+      }
+    });
+    var yBase = H - 8;
+    if (pts.length === 1){
+      svg += '<text x="' + X(pts[0].epoch).toFixed(1) + '" y="' + yBase + '" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">' + shortDate(pts[0].epoch) + '</text>';
+    } else {
+      svg += '<text x="' + padL + '" y="' + yBase + '" text-anchor="start" font-size="10" fill="currentColor" fill-opacity="0.6">' + shortDate(pts[0].epoch) + '</text>';
+      svg += '<text x="' + (W - padR) + '" y="' + yBase + '" text-anchor="end" font-size="10" fill="currentColor" fill-opacity="0.6">' + shortDate(pts[pts.length - 1].epoch) + '</text>';
+    }
+    svg += '</svg>';
+    wrap.innerHTML = svg;
+
+    var last = pts[pts.length - 1];
+    var text = 'Latest: ' + fmtVal(last.v) + ' ' + unit + ' \u00b7 ' + shortDate(last.epoch);
+    if (pts.length > 1){
+      var prev = pts[pts.length - 2];
+      var diff = last.v - prev.v;
+      text += ' (' + (diff >= 0 ? '+' : '\u2212') + fmtVal(Math.abs(diff)) + ' since ' + shortDate(prev.epoch) + ')';
+    }
+    latest.textContent = text;
+  }
+
   // ---------- Networking ----------
   function queueOp(payload){
     var pending = getPending();
@@ -357,25 +790,29 @@
     flushPending();
   }
 
+  var flushing = false;
   function flushPending(){
-    if (!configured) return;
+    if (!configured || flushing) return;
     var pending = getPending();
     if (pending.length === 0) { updateSyncNote(); return; }
     var next = pending[0];
-    var rest = pending.slice(1);
+    flushing = true;
     fetch(CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(next)
     }).then(function(r){ return r.json(); }).then(function(res){
-      if (res && res.ok){
-        setPending(rest);
+      flushing = false;
+      if (res && (res.ok || res.error === 'not found')){
+        // drop the op we just sent, keeping anything queued while it was in flight
+        setPending(getPending().slice(1));
         updateSyncNote();
-        if (rest.length > 0) flushPending();
+        if (getPending().length > 0) flushPending();
+        else { fetchSummary(); fetchDerived(); }
       } else {
         updateSyncNote();
       }
-    }).catch(function(){ updateSyncNote(); });
+    }).catch(function(){ flushing = false; updateSyncNote(); });
   }
 
   function updateSyncNote(){
@@ -387,7 +824,7 @@
 
   function fetchRecent(){
     if (!configured) return;
-    fetch(CONFIG.APPS_SCRIPT_URL + '?action=recent&limit=20')
+    fetch(CONFIG.APPS_SCRIPT_URL + '?action=recent&limit=60')
       .then(function(r){ return r.json(); })
       .then(function(res){ if (res && res.ok){ setCache(res.entries); renderRecent(); renderRows(); } })
       .catch(function(){});
@@ -406,7 +843,7 @@
   }
 
   // ---------- Rendering: rows ----------
-  function renderRows(){ renderSleepRow(); renderFeedRow(); renderBottleRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); }
+  function renderRows(){ renderSleepRow(); renderFeedRow(); renderBottleRow(); renderDiaperRow(); renderBathRow(); renderMedicineRow(); renderGrowthRow(); }
 
   function formTag(d){
     if (d.mode === 'edit') return '<span class="tag-badge">edit</span>';
@@ -613,6 +1050,7 @@
     if (d.type === 'Diaper') return renderDiaperForm(d);
     if (d.type === 'Bath') return renderBathForm(d);
     if (d.type === 'Medicine') return renderMedicineForm(d);
+    if (d.type === 'GrowthTemp' || d.type === 'Growth' || d.type === 'Temperature') return renderGrowthTempForm(d);
     return '';
   }
 
@@ -626,7 +1064,7 @@
     el.className = 'row';
     el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     el.innerHTML =
-      '<div><div class="row-label" style="font-weight:600;">Diaper</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to log</div></div>' +
+      '<div><div class="row-label" style="font-weight:600;">Diaper</div><div class="row-hint" id="diaperHint" style="font-size:0.85rem; opacity:0.7;">' + diaperHintHtml() + '</div></div>' +
       '<button class="btn" data-action="open-new" data-type="Diaper">\uFF0B Log</button>';
   }
 
@@ -651,7 +1089,7 @@
     el.className = 'row';
     el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     el.innerHTML =
-      '<div><div class="row-label" style="font-weight:600;">Bath</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Tap to log</div></div>' +
+      '<div><div class="row-label" style="font-weight:600;">Bath</div><div class="row-hint" id="bathHint" style="font-size:0.85rem; opacity:0.7;">' + bathHintHtml() + '</div></div>' +
       '<button class="btn" data-action="open-new" data-type="Bath">\uFF0B Log</button>';
   }
 
@@ -662,7 +1100,7 @@
   function getLastDose(){
     var cache = getCache();
     for (var i=0;i<cache.length;i++){
-      if (cache[i]['Type'] === 'Medical'){
+      if (cache[i]['Type'] === 'Medical' && cache[i]['[Medical] Medication']){
         return Number(cache[i]['Start Date/time (Epoch)']) || Date.parse(cache[i]['Start Date/time']);
       }
     }
@@ -723,7 +1161,7 @@
     }
 
     el.className = 'row';
-    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0;';
+    el.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--paper-line, #e3d9c4);';
     if (!med || !med.name){
       el.innerHTML =
         '<div><div class="row-label" style="font-weight:600;">Medicine</div><div class="row-hint" style="font-size:0.85rem; opacity:0.7;">Set up a medication to track doses</div></div>' +
@@ -754,7 +1192,7 @@
     var cache = getCache();
     var panel = document.getElementById('recentPanel');
     if (cache.length === 0){ panel.innerHTML = '<div style="padding:16px; text-align:center; opacity:0.7;">Nothing logged yet.</div>'; return; }
-    panel.innerHTML = cache.map(entryRowHtml).join('');
+    panel.innerHTML = cache.slice(0, 25).map(entryRowHtml).join('');
   }
 
   function entryRowHtml(e){
@@ -792,9 +1230,18 @@
       detail = e['[Diaper] Type'] || '';
     } else if (type === 'Routine' && e['[Routine] Routine'] === 'Bath'){
       text = 'Bath';
+    } else if (type === 'Medical' && !e['[Medical] Medication'] && numOrNull(e['[Medical] Temperature']) !== null){
+      text = 'Temperature';
+      detail = fmtField(e['[Medical] Temperature']) + ' ' + (UNIT_LABEL[normUnit(e['[Medical] Temperature Unit']) || 'F'] || '');
     } else if (type === 'Medical'){
       text = 'Medicine';
       detail = e['[Medical] Medication'] || '';
+    } else if (type === 'Growth'){
+      text = 'Growth';
+      var gp = [];
+      if (numOrNull(e['[Growth] Weight']) !== null) gp.push(fmtField(e['[Growth] Weight']) + ' ' + (UNIT_LABEL[normUnit(e['[Growth] Weight Unit']) || 'LB'] || ''));
+      if (numOrNull(e['[Growth] Height']) !== null) gp.push(fmtField(e['[Growth] Height']) + ' ' + (UNIT_LABEL[normUnit(e['[Growth] Height Unit']) || 'IN'] || ''));
+      detail = gp.join(' \u00b7 ');
     }
     if (e['Note']) detail = detail ? detail + ' \u00b7 ' + e['Note'] : e['Note'];
 
@@ -926,6 +1373,11 @@
       editing.diaperType = null; editing.color = null; editing.texture = null; editing.size = null;
     } else if (type === 'Bath' || type === 'Medicine'){
       editing.startMs = now;
+    } else if (type === 'GrowthTemp'){
+      var up = getUnitPrefs();
+      editing.startMs = now; editing.dateStr = toDateInputValue(now);
+      editing.weight = ''; editing.height = ''; editing.temp = '';
+      editing.weightUnit = up.weight; editing.heightUnit = up.height; editing.tempUnit = up.temp;
     }
     renderRows();
   }
@@ -934,7 +1386,7 @@
     var rawType = entry['Type'];
     var type = rawType;
     if (rawType === 'Routine' && entry['[Routine] Routine'] === 'Bath') type = 'Bath';
-    else if (rawType === 'Medical') type = 'Medicine';
+    else if (rawType === 'Medical') type = (!entry['[Medical] Medication'] && numOrNull(entry['[Medical] Temperature']) !== null) ? 'Temperature' : 'Medicine';
     else if (rawType === 'Bottlefeed' || rawType === 'Formula' || rawType === 'Bottle' || rawType === 'Bottle Feed') type = 'Bottlefeed';
     var startMs = Number(entry['Start Date/time (Epoch)']) || Date.parse(entry['Start Date/time']);
     editing = { mode: 'edit', type: type, activityKey: entry['_activityKey'], note: entry['Note']||'', startMs: startMs };
@@ -957,6 +1409,16 @@
       editing.size = entry['[Diaper] Detail'] || null;
     } else if (type === 'Medicine'){
       editing.medName = entry['[Medical] Medication'] || '';
+    } else if (type === 'Growth'){
+      editing.dateStr = toDateInputValue(startMs);
+      editing.weight = fmtField(entry['[Growth] Weight']);
+      editing.weightUnit = normUnit(entry['[Growth] Weight Unit']) || 'LB';
+      editing.height = fmtField(entry['[Growth] Height']);
+      editing.heightUnit = normUnit(entry['[Growth] Height Unit']) || 'IN';
+    } else if (type === 'Temperature'){
+      editing.dateStr = toDateInputValue(startMs);
+      editing.temp = fmtField(entry['[Medical] Temperature']);
+      editing.tempUnit = normUnit(entry['[Medical] Temperature Unit']) || 'F';
     }
     renderRecent();
   }
@@ -1007,12 +1469,28 @@
       base["Type"] = "Medical";
       var med = getCurrentMed();
       base["[Medical] Medication"] = (d.mode === 'edit' ? d.medName : (med ? med.name : '')) || '';
+    } else if (d.type === 'Growth'){
+      var wv = numOrNull(d.weight), hv = numOrNull(d.height);
+      base["[Growth] Weight"] = wv === null ? "" : wv;
+      base["[Growth] Weight Unit"] = wv === null ? "" : normUnit(d.weightUnit);
+      base["[Growth] Height"] = hv === null ? "" : hv;
+      base["[Growth] Height Unit"] = hv === null ? "" : normUnit(d.heightUnit);
+    } else if (d.type === 'Temperature'){
+      base["Type"] = "Medical";
+      var tv = numOrNull(d.temp);
+      base["[Medical] Temperature"] = tv === null ? "" : tv;
+      base["[Medical] Temperature Unit"] = tv === null ? "" : normUnit(d.tempUnit);
     }
     return base;
   }
 
   function saveEntry(){
     if (!editing) return;
+    if (editing.type === 'GrowthTemp'){ saveGrowthTemp(); return; }
+    if (editing.type === 'Growth' || editing.type === 'Temperature'){
+      if (!hasGrowthValue(editing)) return;
+      editing.startMs = growthStartMs(editing);
+    }
     if (editing.type === 'Sleep' && editing.ongoing) {
       var startMs = editing.startMs;
       editing = null;
@@ -1033,8 +1511,9 @@
       addCacheEntry(payload);
     }
     queueOp(payload);
+    growthCacheUpsert(payload);
     editing = null;
-    renderRows(); renderRecent(); fetchSummary();
+    renderRows(); renderRecent(); fetchSummary(); renderGrowthChart();
   }
 
   function deleteEntry(){
@@ -1043,8 +1522,9 @@
     var key = editing.activityKey;
     queueOp({ _op: 'delete', _activityKey: key });
     removeCacheEntry(key);
+    growthCacheRemove(key);
     editing = null;
-    renderRows(); renderRecent(); fetchSummary();
+    renderRows(); renderRecent(); fetchSummary(); renderGrowthChart();
   }
 
   // ---------- Ticking ----------
@@ -1074,6 +1554,10 @@
 
   // ---------- Event wiring ----------
   document.addEventListener('click', function(e){
+    var chartMetric = e.target.closest('[data-chart-metric]');
+    if (chartMetric){ chartPrefs.metric = chartMetric.dataset.chartMetric; saveChartPrefs(); renderGrowthChart(); return; }
+    var chartSystem = e.target.closest('[data-chart-system]');
+    if (chartSystem){ chartPrefs.system = chartSystem.dataset.chartSystem; saveChartPrefs(); renderGrowthChart(); renderGrowthRow(); return; }
     var groupChip = e.target.closest('[data-group]');
     if (groupChip && editing){
       var group = groupChip.dataset.group, value = groupChip.dataset.value;
@@ -1119,8 +1603,9 @@
       if (confirm('Delete this entry?')){
         queueOp({ _op: 'delete', _activityKey: qkey });
         removeCacheEntry(qkey);
+        growthCacheRemove(qkey);
         if (editing && editing.activityKey === qkey) editing = null;
-        renderRecent(); renderRows(); fetchSummary();
+        renderRecent(); renderRows(); fetchSummary(); renderGrowthChart();
       }
     }
   });
@@ -1158,6 +1643,7 @@
         if (editing.type === 'Bottlefeed') renderRows();
       } else {
         editing[field] = e.target.value;
+        if (field === 'weight' || field === 'height' || field === 'temp') refreshGrowthSave();
       }
       return;
     }
@@ -1168,13 +1654,13 @@
   document.addEventListener('change', onEditFieldChange);
   document.addEventListener('input', function(e){
     var field = e.target.dataset && e.target.dataset.edit;
-    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours' || field === 'amountOz' || field === 'amountMl') onEditFieldChange(e);
+    if (field === 'note' || field === 'leftMin' || field === 'rightMin' || field === 'name' || field === 'intervalHours' || field === 'amountOz' || field === 'amountMl' || field === 'weight' || field === 'height' || field === 'temp') onEditFieldChange(e);
   });
 
   window.addEventListener('online', flushPending);
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState === 'visible'){
-      renderRows(); flushPending(); fetchRecent(); fetchSummary();
+      renderRows(); flushPending(); fetchRecent(); fetchSummary(); fetchDerived();
     }
   });
 
@@ -1182,11 +1668,13 @@
   document.getElementById('age').textContent = computeAge(CONFIG.BIRTH_DATE);
   renderRecent();
   renderRows();
+  renderGrowthChart();
   fetchRecent();
   fetchSummary();
+  fetchDerived();
   updateSyncNote();
   flushPending();
-  setInterval(function(){ tickSleep(); tickFeed(); tickMed(); }, 1000);
+  setInterval(function(){ tickSleep(); tickFeed(); tickMed(); tickHints(); }, 1000);
 
 })();
 </script>
