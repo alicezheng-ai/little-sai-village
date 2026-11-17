@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sai’s First Foods · 宝宝辅食</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ec;--w1:#cfe3d4;--w2:#f3d9d0;--card:#fffdf8;--ink:#26322d;--mute:#66736c;--line:#dfdbcf;--ac:#2f6b5e;--aci:#fff;--al:#8a4a6b;--alb:#f3e4ec;--ok:#e3efe5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17201c;--w1:#243a30;--w2:#3a2a2d;--card:#202b26;--ink:#e8efe9;--mute:#9fb0a6;--line:#33433b;--ac:#7cc4b0;--aci:#10231d;--al:#e3a6c4;--alb:#3b2832;--ok:#25382e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17201c;--w1:#243a30;--w2:#3a2a2d;--card:#202b26;--ink:#e8efe9;--mute:#9fb0a6;--line:#33433b;--ac:#7cc4b0;--aci:#10231d;--al:#e3a6c4;--alb:#3b2832;--ok:#25382e;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Work Sans","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;background-image:radial-gradient(60% 40% at 15% 0%,var(--w1),transparent 70%),radial-gradient(55% 35% at 95% 8%,var(--w2),transparent 70%);background-repeat:no-repeat;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+main{max-width:560px;margin:0 auto;padding:0 18px 24px}
+h1,h2,h3{font-family:Fraunces,"Noto Serif SC","Songti SC",serif;font-weight:600;margin:0;line-height:1.25}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:22px 0 12px}
+h1{font-size:1.5rem}
+.sub{color:var(--mute);font-size:.86rem;margin-top:2px}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card);flex:none}
+.lang button{border:0;background:none;color:var(--mute);padding:7px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ac);color:var(--aci)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
+.daynav{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.daynav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.2rem;cursor:pointer}
+.daynav button:disabled{opacity:.35}
+.daynum{text-align:center}.daynum b{font-family:Fraunces,serif;font-size:2.3rem;display:block;line-height:1}.daynum span{color:var(--mute);font-size:.85rem}
+.meal{font-family:Fraunces,"Noto Serif SC",serif;font-size:1.22rem;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{font-size:.82rem;padding:3px 10px;border-radius:999px;background:var(--ok);border:1px solid var(--line)}
+.chip.al{background:var(--alb);color:var(--al);border-color:transparent;font-weight:500}
+.alert{border-left:4px solid var(--al);background:var(--alb);border-radius:12px;padding:12px 14px;margin:12px 0}
+.alert h3{font-size:1.05rem;color:var(--al);margin-bottom:4px}.alert p{margin:6px 0 0;font-size:.92rem}
+.lbl{font-weight:600;font-size:.9rem;margin:12px 0 2px}
+.txt{margin:0;font-size:.93rem}
+.hint{font-size:.88rem;color:var(--mute);margin:6px 0 0}
+.ref{font-size:.82rem;color:var(--mute);margin-top:10px}
+.seg{display:flex;gap:8px;margin:4px 0 8px}
+.seg button{flex:1;padding:9px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ac);color:var(--aci);border-color:var(--ac)}
+.grp{font-family:Fraunces,"Noto Serif SC",serif;font-size:1.05rem;margin:16px 0 4px}
+.item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item input{width:22px;height:22px;margin-top:2px;accent-color:var(--ac);flex:none}
+.item label{flex:1;cursor:pointer}.item small{display:block;color:var(--mute);font-size:.82rem}
+.item.done label{text-decoration:line-through;color:var(--mute)}
+.add{display:flex;gap:8px;margin-top:14px}
+.add input,textarea,.dt{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.add input{flex:1;min-width:0}
+textarea{width:100%;min-height:78px;resize:vertical}
+.add button{padding:10px 16px;border-radius:12px;border:0;background:var(--ac);color:var(--aci);font:inherit;font-weight:500;cursor:pointer}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;text-align:center}
+.cal .wd{font-size:.75rem;color:var(--mute)}
+.cal button{aspect-ratio:1;border-radius:12px;border:1px solid transparent;background:none;color:var(--ink);font:inherit;font-size:.9rem;cursor:pointer;position:relative}
+.cal button.has{background:var(--ok);border-color:var(--line);font-weight:600}
+.cal button.sel{outline:2px solid var(--ac)}
+.cal button i{position:absolute;bottom:3px;left:0;right:0;font-style:normal;font-size:.6rem;color:var(--ac)}
+.mh{display:flex;align-items:center;justify-content:space-between}
+.mh button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.1rem;cursor:pointer}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--mute);padding:12px 2px 10px;font:inherit;font-size:.78rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .i{font-size:1.25rem}nav button[aria-current=page]{color:var(--ac);font-weight:600}
+footer{color:var(--mute);font-size:.78rem;margin-top:22px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav id="tabs"></nav>
+<script>
+var L="e",TAB="today",DAY=1,WK=1,CM=0,SEL="",CHK={},CUS=[],LOG={};
+function t(x){return x[L==="z"?1:0]}
+function pad(n){return(n<10?"0":"")+n}
+function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+var UI={
+ title:["Sai’s First Foods","Sai 的第一口辅食"],
+ sub:["Days 1–14 loaded · follows plan days, not dates","已载入第 1–14 天 · 按计划天数，不按日期"],
+ today:["Today","今天"],cal:["Calendar","日历"],grocery:["Grocery","采购"],prep:["Prep","备餐"],
+ day:["Plan day","计划第几天"],of:["of 14 loaded","（已载入 14 天）"],prev:["Previous day","上一天"],next:["Next day","下一天"],
+ newf:["New foods today","今天的新食物"],als:["Allergens in today’s plate","今天含有的过敏原"],
+ two:["Two ways: mashed to get food in the belly, and whole to promote oral motor skills.","两种吃法：压成泥让食物进到肚子里，整块则锻炼口腔动作技能。"],
+ serve:["How to serve","怎么喂"],store:["How to store","怎么保存"],book:["Full recipe in the book, page","完整食谱见书第"],pgz:["","页"],
+ ck:["Checklist","清单"],prepd:["Ingredients prepped","食材已备好"],tried:["Baby tried","宝宝尝了"],
+ watch:["Watched for symptoms of an allergic reaction","已观察过敏反应症状"],ten:["Waited 10 minutes, then offered more","等了 10 分钟后又多给了一些"],
+ date:["Date served","喂食日期"],note:["Notes","备注"],notep:["Anything to remember: reaction, mood, how much he touched or ate","想记下的：反应、情绪、摸了或吃了多少"],
+ newal:["New allergen","新过敏原"],
+ a1:["Start early in the day. Most allergic reactions occur within a few hours of ingestion, often within minutes, and a morning start leaves time to observe baby and to reach your doctor if needed.","尽早在白天喂。大多数过敏反应发生在摄入后几小时内，常常在几分钟内；早上喂，有时间观察宝宝，也更容易联系到医生。"],
+ a2:["If baby eats little or none, don’t force feed: try again tomorrow and repeat the introduction day’s recipe and serving instructions. With no symptoms, move on to the next day.","宝宝吃得很少或没吃，不要强迫喂食：第二天再试，重复引入当天的食谱和喂法。没有症状就进入下一天。"],
+ a3:["Reactions usually appear soon after eating and can include itchy rash, swelling, vomiting or diarrhea, trouble breathing, and decreased blood pressure.","过敏反应通常在进食后不久出现，可能包括皮疹发痒、肿胀、呕吐或腹泻、呼吸困难和血压下降。"],
+ a4:["If baby has severe eczema or an existing allergy to another food, consult a pediatric allergist before introducing common allergens.","如果宝宝有严重湿疹，或已对其他食物过敏，请在引入常见过敏原前咨询儿科过敏专科医生。"],
+ mon:["Foods baby has tried","宝宝尝过的食物"],emp:["Mark foods as tried on the Today tab and they appear here.","在“今天”页把食物标为已尝，就会出现在这里。"],
+ pd:["Plan day","计划第"],pdz:["","天"],none:["Nothing logged on this date.","这一天没有记录。"],
+ gn1:["Week 1 ingredient list from the book (p. 17).","书中第 1 周食材清单（第 17 页）。"],
+ gn2:["Week 2 ingredient list from the book (p. 28).","书中第 2 周食材清单（第 28 页）。"],
+ add:["Add your own item","添加自己的物品"],addb:["Add","添加"],mine:["Added by us","我们自己加的"],
+ pi:["Make once, reuse. Dates and storage windows come from the book’s recipes and “grab from the refrigerator” cross-references.","一次做好，多次使用。日期和保存时间来自书中食谱及“从冰箱取出”的前后引用。"],
+ mk:["Make on day","制作日："],ru:["Reuse on","再次使用："],fr:["fridge","冷藏"],fz:["freezer","冷冻"],
+ fridge:["Fridge","冷藏"],freeze:["Freezer","冷冻"],
+ foot:["Based on Solid Starts’ “First 100 Days” (not affiliated). Recipe steps stay in the book; page numbers are shown. Not medical advice.","内容基于 Solid Starts《First 100 Days》（无隶属关系）。食谱步骤请看原书，这里标注页码。非医疗建议。"]
+};
+var F={broccoli:["Broccoli","西兰花"],cauli:["Cauliflower","花椰菜"],mango:["Mango","芒果"],oats:["Oats","燕麦"],bean:["Cannellini beans","白腰豆"],apple:["Apple","苹果"],egg:["Egg","鸡蛋"],corn:["Corn","玉米"],pepper:["Bell pepper","甜椒"],chick:["Chickpeas","鹰嘴豆"],pb:["Peanut","花生"],hemp:["Hemp seeds","火麻仁"],oil:["Olive oil","橄榄油"],lemon:["Lemon","柠檬"],cumin:["Cumin","孜然"]};
+var AL={egg:["Egg","鸡蛋"],peanut:["Peanut","花生"]};
+var S1=["Mashed cannellini beans: fridge 3 days or freezer 2 months.","白腰豆泥：冷藏 3 天或冷冻 2 个月。"];
+var MG=["Cut mango: fridge 3 days or freezer 2 months.","切好的芒果：冷藏 3 天或冷冻 2 个月。"];
+// [title, foods tried, allergens, new foods, serve, store, watch, ten]
+var D=[
+[["Broccoli, two ways","西兰花两种吃法"],["broccoli"],[],["broccoli","hemp","oil"],["Pass a large floret to touch, grab, and munch. When baby is ready, offer a pre-loaded spoon of mashed floret, held near the mouth. Once baby grabs the spoon, let go.","递一大朵西兰花让宝宝摸、抓、啃。宝宝准备好后，递上预先盛好泥的勺子，放在嘴边；宝宝抓住后就松手。"],["Cooked broccoli: fridge 3 days or freezer 2 months.","熟西兰花：冷藏 3 天或冷冻 2 个月。"],0,0],
+[["Mango or banana, two ways","芒果或香蕉两种吃法"],["mango"],[],["mango"],["Pass the mango pit and encourage baby to grab and munch. When ready, offer a spoon of mashed mango. If baby has a known cashew or pistachio allergy, gnawing the pit may cause a rash around the mouth.","把芒果核递给宝宝抓着啃。准备好后再给一勺芒果泥。若宝宝已知对腰果或开心果过敏，啃果核可能使嘴周围起疹。"],MG,0,0],
+[["Cauliflower, two ways","花椰菜两种吃法"],["cauli"],[],["cauli"],["Pass a large floret to touch, grab, and munch. When ready, offer a pre-loaded spoon of mashed cauliflower.","递一大朵花椰菜让宝宝摸、抓、啃。准备好后，递上预先盛好花椰菜泥的勺子。"],["Cooked cauliflower: fridge 3 days or freezer 2 months.","熟花椰菜：冷藏 3 天或冷冻 2 个月。"],0,0],
+[["Oatmeal, two ways","燕麦两种吃法"],["oats"],[],["oats"],["Offer the bowl and an oatmeal ball for self-feeding. When ready, pre-load a spoon with oatmeal and place it in front of baby.","给碗和燕麦球让宝宝自己吃。准备好后，把盛好燕麦的勺子放在宝宝面前。"],["Oatmeal: fridge 3 days or freezer 2 months. If made with human milk, use within 4 days.","燕麦：冷藏 3 天或冷冻 2 个月。若加了母乳，4 天内用完。"],0,0],
+[["Broccoli or cauliflower florets + mashed cannellini beans","西兰花或花椰菜小朵 + 白腰豆泥"],["broccoli","cauli","bean"],[],["bean"],["Offer the bowl of florets for self-feeding. To encourage utensils, offer a pre-loaded spoon of mashed beans.","给一碗小朵让宝宝自己吃。为鼓励使用餐具，递上盛好白腰豆泥的勺子。"],S1,0,0],
+[["Mango, two ways","芒果两种吃法"],["mango"],[],[],["Offer the mango pit and mashed mango for self-feeding. If baby needs help with the pit, pass it in the air for baby to grab.","给芒果核和芒果泥让宝宝自己吃。若宝宝拿不起果核，在空中递给他抓。"],MG,0,0],
+[["Stewed apple, two ways","炖苹果两种吃法"],["apple"],[],["apple"],["Offer mashed apple and a stewed apple half to touch, grab, and munch. To get food in the belly, hold a pre-loaded spoon of mashed apple in the air and let baby reach for it.","给苹果泥和半个炖苹果，让宝宝摸、抓、啃。想让食物进肚子，就把盛好苹果泥的勺子举在空中，让宝宝自己伸手。"],["Cooked apple: fridge 3 days or freezer 2 months.","熟苹果：冷藏 3 天或冷冻 2 个月。"],0,0],
+[["Cauliflower, two ways + mashed hard-boiled egg","花椰菜两种吃法 + 水煮蛋泥"],["cauli","egg"],["egg"],["egg"],["Scoop a scant fingertip-size amount of cauliflower-egg mash onto a spoon. After baby takes the bite, offer the large cauliflower floret to munch while you watch for symptoms of an allergic reaction. If baby seems okay after 10 minutes, offer more mash.","在勺子上舀一点点（约指尖大小）花椰菜蛋泥。宝宝吃下后，递上大朵花椰菜让他啃，同时观察有无过敏反应症状。约 10 分钟后看起来没事，再多给一些蛋泥。"],["Hard-boiled eggs: fridge 1 week.","水煮蛋：冷藏 1 周。"],1,1],
+[["Broccoli egg strip","西兰花蛋条"],["broccoli","egg"],["egg"],[],["Let baby munch 1 egg strip and large florets while you watch for symptoms of an allergic reaction. If baby seems okay after 10 minutes, offer another egg strip.","让宝宝啃 1 条蛋条和大朵西兰花，同时观察有无过敏反应症状。约 10 分钟后看起来没事，再给一条蛋条。"],["Egg strips: fridge 3 days or freezer 2 months.","蛋条：冷藏 3 天或冷冻 2 个月。"],1,1],
+[["Mango or banana, two ways + mashed hard-boiled egg","芒果或香蕉两种吃法 + 水煮蛋泥"],["mango","egg"],["egg"],[],["Pre-load a spoon with egg-mango mash and offer it. Pass the mango pit to munch while you watch for symptoms of an allergic reaction.","用勺子盛好蛋芒果泥递给宝宝。把芒果核递给他啃，同时观察有无过敏反应症状。"],MG,1,0],
+[["Broccoli egg strip + steamed corn cob","西兰花蛋条 + 蒸玉米段"],["broccoli","egg","corn"],["egg"],["corn"],["Offer 1 egg strip and corn cob rounds for self-feeding while you watch for symptoms of an allergic reaction. If baby seems okay after 10 minutes, offer another egg strip.","给 1 条蛋条和玉米棒段让宝宝自己吃，同时观察有无过敏反应症状。约 10 分钟后看起来没事，再给一条蛋条。"],["Cooked corn on the cob: fridge 3 days or freezer 2 months.","熟玉米棒：冷藏 3 天或冷冻 2 个月。"],1,1],
+[["Cooked bell pepper half + mashed hard-boiled egg","熟甜椒半个 + 水煮蛋泥"],["pepper","egg"],["egg"],["pepper"],["Pre-load a spoon with mashed egg, then offer a couple more spoonfuls. Offer a bell pepper half to munch while you watch for symptoms of an allergic reaction.","用勺子盛好蛋泥，再多给两勺。递上半个甜椒让宝宝啃，同时观察有无过敏反应症状。"],["Cooked bell pepper halves: fridge 3 days.","熟甜椒半个：冷藏 3 天。"],1,0],
+[["Cauliflower florets + sesame-free hummus","花椰菜小朵 + 无芝麻鹰嘴豆泥"],["cauli","chick"],[],["chick","lemon","cumin"],["Stand a floret in the hummus so it is ready for baby to grab, then let baby self-feed. If baby needs help, swipe a floret in the hummus and pass it in the air.","把一朵花椰菜立在鹰嘴豆泥里，方便宝宝抓，然后让他自己吃。需要帮忙时，用小朵蘸一下鹰嘴豆泥，在空中递给他。"],["Sesame-free hummus: fridge 3 days.","无芝麻鹰嘴豆泥：冷藏 3 天。"],0,0],
+[["Apple oatmeal, two ways + smooth peanut butter on the fingertip","苹果燕麦两种吃法 + 指尖少许顺滑花生酱"],["apple","oats","pb"],["peanut"],["pb"],["Start with the oatmeal ball. After a few minutes, dip your finger in thinned peanut butter and offer it for a taste; repeat once or twice. Let baby self-feed the apple oatmeal while you watch for symptoms of an allergic reaction. If baby seems okay after 10 minutes, offer more tastes.","先给燕麦球。几分钟后，用手指蘸稀释的花生酱让宝宝尝，重复一两次。宝宝自己吃苹果燕麦时，观察有无过敏反应症状。约 10 分钟后看起来没事，再多给几口。"],["Oatmeal and stewed apple: fridge 3 days or freezer 2 months.","燕麦和炖苹果：冷藏 3 天或冷冻 2 个月。"],1,1]
+];
+var G={
+1:[[["Produce","蔬果"],[["Apple","苹果","1 whole · any variety","1 个 · 任意品种"],["Broccoli","西兰花","1 head · or pre-cut fresh or frozen florets","1 颗 · 或预切的新鲜或冷冻小朵"],["Cauliflower","花椰菜","1 head · or pre-cut fresh or frozen florets","1 颗 · 或预切的新鲜或冷冻小朵"],["Mango, ripe","熟芒果","2 whole · ideally fresh, not frozen; banana as substitute","2 个 · 最好新鲜而非冷冻；可用香蕉代替"]]],
+ [["Pantry","干货"],[["Cannellini beans, canned","罐装白腰豆","¼ cup (60 ml) · or dry beans cooked from scratch","¼ 杯（60 毫升）· 或自己煮的干豆"],["Hulled hemp seeds","去壳火麻仁","6 tsp (18 g) · or chia, pumpkin, or sunflower seeds","6 茶匙（18 克）· 或奇亚籽、南瓜籽、葵花籽"],["Instant oatmeal","即食燕麦","1 cup (190 g) · or rolled oats or fortified infant oatmeal","1 杯（190 克）· 或传统燕麦、强化婴儿燕麦"],["Olive oil","橄榄油","1½ tsp (7 ml) · any variety","1½ 茶匙（7 毫升）· 任意品种"]]]],
+2:[[["Dairy, meat, or fish","蛋奶肉鱼"],[["Eggs, large","大号鸡蛋","7 · brown or white hen’s eggs","7 个 · 棕壳或白壳鸡蛋"]]],
+ [["Pantry","干货"],[["Chickpeas, canned","罐装鹰嘴豆","1 can, 15 oz (425 g) · or dry chickpeas cooked from scratch","1 罐，15 盎司（425 克）· 或自己煮的干鹰嘴豆"],["Cumin, optional","孜然（可选）","1 tsp (2 g) · pre-ground or whole seeds ground at home","1 茶匙（2 克）· 现成粉或整粒在家磨"],["Smooth peanut butter, honey-free","顺滑花生酱，无蜂蜜","¼ tsp (1 g) · creamy or smooth, not chunky, no added sweeteners","¼ 茶匙（1 克）· 顺滑型，非颗粒型，不加甜味剂"]]],
+ [["Produce","蔬果"],[["Apple","苹果","1 whole · any variety","1 个 · 任意品种"],["Bell pepper","甜椒","1 whole · any variety","1 个 · 任意品种"],["Corn on the cob","玉米棒","1 ear · fresh or frozen","1 根 · 新鲜或冷冻"],["Lemon","柠檬","1 whole · any variety","1 个 · 任意品种"],["Mango, ripe","熟芒果","1 whole · fresh, not frozen; banana as substitute","1 个 · 新鲜而非冷冻；可用香蕉代替"]]],
+ [["Check for leftovers","先看看有没有剩的"],[["Broccoli florets","西兰花小朵","½ cup (120 ml)","½ 杯（120 毫升）"],["Cauliflower florets","花椰菜小朵","1 cup (240 ml)","1 杯（240 毫升）"],["Instant oatmeal","即食燕麦","½ cup (96 g)","½ 杯（96 克）"],["Hulled hemp seeds, optional","去壳火麻仁（可选）","2 tsp (6 g) · or chia, or finely ground pumpkin or sunflower seeds","2 茶匙（6 克）· 或奇亚籽、磨细的南瓜籽或葵花籽"],["Olive oil","橄榄油","⅓ cup (75 ml)","⅓ 杯（75 毫升）"]]]]
+};
+// [name, make day, reuse days, fridge days, page]
+var P=[
+[["Steamed broccoli florets","蒸西兰花小朵"],1,[5,9],3,18],
+[["Steamed cauliflower florets","蒸花椰菜小朵"],3,[5,8,13],3,20],
+[["Hard-boiled eggs (a batch of 4, set 1 aside for the day)","水煮蛋（一批 4 个，当天用 1 个）"],8,[10,12],7,29],
+[["Broccoli egg strips","西兰花蛋条"],9,[11],3,30]
+];
+function pg(d){return d<=7?17+d:21+d}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function save(){try{localStorage.setItem("ff2",JSON.stringify({L:L,DAY:DAY,CHK:CHK,CUS:CUS,LOG:LOG}))}catch(e){}}
+function load(){try{var s=JSON.parse(localStorage.getItem("ff2")||"null");if(s){L=s.L||"e";DAY=s.DAY||1;CHK=s.CHK||{};CUS=s.CUS||[];LOG=s.LOG||{}}}catch(e){}SEL=ymd(new Date())}
+function ent(d){if(!LOG[d])LOG[d]={d:ymd(new Date()),p:0,t:{},w:0,x:0,n:""};return LOG[d]}
+function seg(){var h='<div class="seg">';[1,2].forEach(function(w){h+='<button aria-pressed="'+(WK===w)+'" onclick="setWk('+w+')">'+(L==="z"?"第 "+w+" 周":"Week "+w)+'</button>'});return h+'</div>'}
+function todayView(){
+ var d=D[DAY-1],e=LOG[DAY]||{t:{}},h="";
+ h+='<div class="card"><div class="daynav"><button aria-label="'+t(UI.prev)+'" onclick="go(-1)"'+(DAY<=1?" disabled":"")+'>‹</button><div class="daynum"><span>'+t(UI.day)+'</span><b>'+DAY+'</b><span>'+t(UI.of)+'</span></div><button aria-label="'+t(UI.next)+'" onclick="go(1)"'+(DAY>=14?" disabled":"")+'>›</button></div></div>';
+ if(d[2].length&&DAY===[8,14].filter(function(x){return x===DAY})[0]){h+='<div class="alert" role="note"><h3>'+t(UI.newal)+': '+t(AL[d[2][0]])+'</h3><p>'+t(UI.a1)+'</p><p>'+t(UI.a2)+'</p><p>'+t(UI.a3)+'</p><p>'+t(UI.a4)+'</p></div>'}
+ h+='<div class="card"><div class="meal">'+t(d[0])+'</div>';
+ if(/two ways/i.test(d[0][0]))h+='<p class="hint">'+t(UI.two)+'</p>';
+ if(d[3].length)h+='<div class="lbl">'+t(UI.newf)+'</div><div class="chips">'+d[3].map(function(f){return'<span class="chip">'+esc(t(F[f]))+'</span>'}).join("")+'</div>';
+ if(d[2].length)h+='<div class="lbl">'+t(UI.als)+'</div><div class="chips">'+d[2].map(function(a){return'<span class="chip al">'+t(AL[a])+'</span>'}).join("")+'</div>';
+ h+='<div class="lbl">'+t(UI.serve)+'</div><p class="txt">'+t(d[4])+'</p><div class="lbl">'+t(UI.store)+'</div><p class="txt">'+t(d[5])+'</p><div class="ref">'+t(UI.book)+' '+pg(DAY)+t(UI.pgz)+'</div></div>';
+ h+='<div class="card"><h3>'+t(UI.ck)+'</h3>';
+ h+='<div class="item'+(e.p?" done":"")+'"><input type="checkbox" id="kp"'+(e.p?" checked":"")+' onchange="setF(\'p\')"><label for="kp">'+t(UI.prepd)+'</label></div>';
+ h+='<div class="lbl">'+t(UI.tried)+'</div>';
+ d[1].forEach(function(f){var on=e.t&&e.t[f];h+='<div class="item'+(on?" done":"")+'"><input type="checkbox" id="kt'+f+'"'+(on?" checked":"")+' onchange="setT(\''+f+'\')"><label for="kt'+f+'">'+esc(t(F[f]))+'</label></div>'});
+ if(d[6])h+='<div class="item'+(e.w?" done":"")+'"><input type="checkbox" id="kw"'+(e.w?" checked":"")+' onchange="setF(\'w\')"><label for="kw">'+t(UI.watch)+'</label></div>';
+ if(d[7])h+='<div class="item'+(e.x?" done":"")+'"><input type="checkbox" id="kx"'+(e.x?" checked":"")+' onchange="setF(\'x\')"><label for="kx">'+t(UI.ten)+'</label></div>';
+ h+='<div class="lbl">'+t(UI.date)+'</div><input class="dt" type="date" value="'+(e.d||ymd(new Date()))+'" onchange="setDate(this.value)">';
+ h+='<div class="lbl">'+t(UI.note)+'</div><textarea placeholder="'+esc(t(UI.notep))+'" onchange="setNote(this.value)">'+esc(e.n||"")+'</textarea></div>';
+ return h
+}
+function byDate(){var m={};Object.keys(LOG).forEach(function(k){var e=LOG[k];if(Object.keys(e.t||{}).length||e.n){(m[e.d]=m[e.d]||[]).push(+k)}});return m}
+function calView(){
+ var loc=L==="z"?"zh-CN":"en-US",n=new Date(),b=new Date(n.getFullYear(),n.getMonth()+CM,1),y=b.getFullYear(),mo=b.getMonth(),by=byDate(),h="";
+ h+='<div class="card"><div class="mh"><button aria-label="‹" onclick="mv(-1)">‹</button><h3>'+b.toLocaleDateString(loc,{year:"numeric",month:"long"})+'</h3><button aria-label="›" onclick="mv(1)">›</button></div><div class="cal">';
+ for(var i=0;i<7;i++)h+='<div class="wd">'+new Date(2023,0,1+i).toLocaleDateString(loc,{weekday:"narrow"})+'</div>';
+ for(i=0;i<b.getDay();i++)h+='<div></div>';
+ for(var dd=1;dd<=new Date(y,mo+1,0).getDate();dd++){var k=y+"-"+pad(mo+1)+"-"+pad(dd),c=by[k]?by[k].reduce(function(s,x){return s+Object.keys(LOG[x].t||{}).length},0):0;
+  h+='<button class="'+(by[k]?"has":"")+(k===SEL?" sel":"")+'" onclick="pick(\''+k+'\')">'+dd+(c?'<i>'+c+'</i>':'')+'</button>'}
+ h+='</div></div><div class="card"><h3>'+SEL+'</h3>';
+ if(by[SEL])by[SEL].forEach(function(x){var e=LOG[x];h+='<div class="lbl">'+t(UI.pd)+' '+x+t(UI.pdz)+'</div><div class="chips">'+Object.keys(e.t||{}).map(function(f){return'<span class="chip">'+esc(t(F[f]))+'</span>'}).join("")+'</div>'+(e.n?'<p class="txt">'+esc(e.n)+'</p>':'')});
+ else h+='<p class="hint">'+t(UI.none)+'</p>';
+ h+='</div>';
+ var first={};Object.keys(LOG).sort(function(a,b){return LOG[a].d<LOG[b].d?-1:1}).forEach(function(k){Object.keys(LOG[k].t||{}).forEach(function(f){if(!first[f])first[f]=LOG[k].d})});
+ var ks=Object.keys(first);
+ h+='<div class="card"><h3>'+t(UI.mon)+' · '+ks.length+'</h3>'+(ks.length?'<div class="chips">'+ks.map(function(f){return'<span class="chip">'+esc(t(F[f]))+' · '+first[f].slice(5)+'</span>'}).join("")+'</div>':'<p class="hint">'+t(UI.emp)+'</p>')+'</div>';
+ return h
+}
+function groceryView(){
+ var h=seg()+'<p class="hint">'+t(UI["gn"+WK])+'</p><div class="card" style="padding-top:2px">';
+ G[WK].forEach(function(g,gi){h+='<div class="grp">'+t(g[0])+'</div>';g[1].forEach(function(it,ii){var id="g"+WK+"-"+gi+"-"+ii,on=CHK[id];
+  h+='<div class="item'+(on?" done":"")+'"><input type="checkbox" id="'+id+'"'+(on?" checked":"")+' onchange="tog(\''+id+'\')"><label for="'+id+'">'+esc(L==="z"?it[1]:it[0])+'<small>'+esc(L==="z"?it[3]:it[2])+'</small></label></div>'})});
+ var mine=CUS.filter(function(c){return c.w===WK});
+ if(mine.length){h+='<div class="grp">'+t(UI.mine)+'</div>';mine.forEach(function(c){var id="c"+c.id,on=CHK[id];h+='<div class="item'+(on?" done":"")+'"><input type="checkbox" id="'+id+'"'+(on?" checked":"")+' onchange="tog(\''+id+'\')"><label for="'+id+'">'+esc(c.n)+'</label></div>'})}
+ return h+'</div><div class="add"><input id="newItem" placeholder="'+esc(t(UI.add))+'" onkeydown="if(event.key===\'Enter\')addIt()"><button onclick="addIt()">'+t(UI.addb)+'</button></div>'
+}
+function prepView(){
+ var h='<p class="hint">'+t(UI.pi)+'</p>';
+ P.forEach(function(p){h+='<div class="card"><h3>'+t(p[0])+'</h3><div class="chips"><span class="chip">'+t(UI.mk)+' '+p[1]+'</span><span class="chip">'+t(UI.fridge)+': '+p[3]+(L==="z"?" 天":" days")+(p[3]===3?" · "+t(UI.freeze)+": 2 "+(L==="z"?"个月":"months"):"")+'</span></div><div class="lbl">'+t(UI.ru)+'</div><div class="chips">'+p[2].map(function(r){var g=r-p[1],ok=g<=p[3];return'<span class="chip'+(ok?"":" al")+'">'+(L==="z"?"第 "+r+" 天":"Day "+r)+' · '+(L==="z"?g+" 天后":"+"+g+"d")+' · '+t(ok?UI.fr:UI.fz)+'</span>'}).join("")+'</div><div class="ref">'+t(UI.book)+' '+p[4]+t(UI.pgz)+'</div></div>'});
+ return h
+}
+function render(){
+ document.documentElement.lang=L==="z"?"zh":"en";
+ var v=TAB==="today"?todayView():TAB==="cal"?calView():TAB==="grocery"?groceryView():prepView();
+ document.getElementById("app").innerHTML='<header><div><h1>'+t(UI.title)+'</h1><div class="sub">'+t(UI.sub)+'</div></div><div class="lang" role="group" aria-label="Language"><button aria-pressed="'+(L==="e")+'" onclick="setL(\'e\')">EN</button><button aria-pressed="'+(L==="z")+'" onclick="setL(\'z\')">中文</button></div></header>'+((TAB==="grocery")?seg():"")+v.replace(/^<div class="seg">.*?<\/div>/,"")+'<footer>'+t(UI.foot)+'</footer>';
+ document.getElementById("tabs").innerHTML=[["today","🥣"],["cal","📅"],["grocery","🛒"],["prep","🍳"]].map(function(x){return'<button aria-current="'+(TAB===x[0]?"page":"false")+'" onclick="setTab(\''+x[0]+'\')"><span class="i">'+x[1]+'</span>'+t(UI[x[0]])+'</button>'}).join("");
+}
+function go(n){DAY=Math.max(1,Math.min(14,DAY+n));save();render()}
+function setL(l){L=l;save();render()}
+function setTab(x){TAB=x;render();window.scrollTo(0,0)}
+function setWk(w){WK=w;render()}
+function tog(id){CHK[id]=!CHK[id];save();render()}
+function addIt(){var el=document.getElementById("newItem"),v=el.value.trim();if(!v)return;CUS.push({id:Date.now(),n:v,w:WK});save();render()}
+function setF(k){var e=ent(DAY);e[k]=e[k]?0:1;save();render()}
+function setT(f){var e=ent(DAY);if(e.t[f])delete e.t[f];else e.t[f]=1;save();render()}
+function setDate(v){if(!v)return;ent(DAY).d=v;save();render()}
+function setNote(v){ent(DAY).n=v;save()}
+function mv(n){CM+=n;render()}
+function pick(k){SEL=k;render()}
+load();render();
+</script>
+</body>
+</html>
