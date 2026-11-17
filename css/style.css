@@ -446,3 +446,10 @@ header.hero h1 {
   color: #fff;
   border-color: var(--rose-deep, #a35252);
 }
+
+
+/* Hide the old navigation bar across the website */
+.site-nav {
+  display: none !important;
+}
+
