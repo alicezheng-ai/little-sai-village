@@ -56,20 +56,50 @@
 
   // ---------- 2. The tree ----------
   // Oldest first. To add a branch, copy a line and fill it in.
-  var TREE = [
-    { when: 'Mid-June 2026', title: 'Sai arrives',
-      text: 'The seed. Everything on this tree grows from here.' },
-    { when: 'Month 1', title: 'The very beginning', href: 'videos.html',
-      text: 'His first monthly video.' },
-    { when: 'Month 2', title: 'Happy birthday daddy!', href: 'videos.html',
-      text: 'The second monthly video.' },
-    { when: 'Month 3', title: 'More of his cute smiles', href: 'videos.html',
-      text: 'More of his cute smiles every day.' },
-    { when: 'September 19, 2026', title: 'The first branch: Sai\u2019s 100 Days', href: 'event-100-days.html',
-      text: 'At Maharaja in Downtown Issaquah: a red egg rolled over his feet, a cinnabar dot, and longevity noodles, with the village around him.' },
-    { when: 'Month 4', title: 'Getting more curious', href: 'videos.html',
-      text: 'Getting more curious about the world.' }
-  ];
+  
+var TREE = [
+  {
+    when: 'Mid-June 2026',
+    title: 'Sai arrives',
+    text: 'The seed. Everything on this tree grows from here.'
+  },
+  {
+    when: 'Month 1',
+    title: 'The very beginning',
+    href: 'videos.html',
+    text: 'His first monthly video.'
+  },
+  {
+    when: 'Month 2',
+    title: 'Happy birthday daddy!',
+    href: 'videos.html',
+    text: 'The second monthly video.'
+  },
+  {
+    when: 'Month 3',
+    title: 'More of his cute smiles',
+    href: 'videos.html',
+    text: 'More of his cute smiles every day.'
+  },
+  {
+    when: 'September 19, 2026',
+    title: 'The first branch: Sai’s 100 Days',
+    href: 'event-100-days.html',
+    text: 'At Maharaja in Downtown Issaquah: a red egg rolled over his feet, a cinnabar dot, and longevity noodles, with the village around him.'
+  },
+  {
+    when: 'Month 4',
+    title: 'Getting more curious',
+    href: 'videos.html',
+    text: 'Getting more curious about the world.'
+  },
+  {
+    when: 'Month 5',
+    title: 'Happy birthday Mama and Happy Diwali!',
+    href: 'videos.html',
+    text: 'Celebrating Mama’s birthday and Diwali, surrounded by love.'
+  }
+];
 
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
