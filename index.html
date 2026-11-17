@@ -4,132 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Little Sai and His Village of Love</title>
-<meta name="description" content="A living memory archive for Sai — celebrations, monthly videos, photos, and wishes from the village, kept for him to read one day.">
+<meta name="description" content="Sai's growing family village: stories, monthly videos, celebrations, photos, wishes, and everyday family tools.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🌱</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+/* Homepage additions; existing shared design tokens and component classes remain unchanged. */
+.site-nav { flex-wrap:wrap; gap:12px; }
+.site-nav__links { flex-wrap:wrap; gap:10px 18px; }
+.village-kicker { color:var(--rose-deep); font-weight:600; font-size:.78rem; letter-spacing:.11em; text-transform:uppercase; }
+.village-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+.village-group { background:var(--paper-card); border:1px solid var(--paper-line); border-radius:16px; padding:22px; min-width:0; }
+.village-group h3 { font-family:'Fraunces','Noto Serif SC',serif; font-size:1.3rem; margin:0 0 6px; }
+.village-group p { color:var(--ink-soft); font-size:.88rem; margin:0 0 14px; }
+.village-links { display:grid; gap:3px; }
+.village-links a { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-top:1px solid var(--paper-line); text-decoration:none; color:var(--ink); font-size:.91rem; }
+.village-links a::after { content:'↗'; color:var(--rose-deep); flex:none; }
+.village-links a:hover { color:var(--rose-deep); }
+.village-links small { color:var(--ink-soft); display:block; font-size:.78rem; }
+.video-note { margin-top:16px; font-size:.9rem; color:var(--ink-soft); }
+@media(max-width:720px) { .village-grid {grid-template-columns:1fr;} .site-nav__links {gap:8px 14px;} .site-nav__mark span {display:none;} }
+</style>
 </head>
 <body>
-
-<nav class="site-nav">
+<nav class="site-nav" aria-label="Main navigation">
   <a href="index.html" class="site-nav__mark">Little Sai <span>&amp; His Village of Love</span></a>
   <ul class="site-nav__links">
-    <li><a href="events.html">Events</a></li>
-    <li><a href="videos.html">Videos</a></li>
-    <li><a href="wishes.html">Wishes</a></li>
-    <li><a href="nanny.html">Nanny Guide</a></li>
-    <li><a href="./great-grandpa-yin-xiuli-memorial.html">祖外公殷修力</a></li>
+    <li><a href="#explore">Explore the Village</a></li>
+    <li><a href="events.html">Events</a></li><li><a href="videos.html">Videos</a></li>
+    <li><a href="wishes.html">Wishes</a></li><li><a href="nanny.html">Nanny Guide</a></li>
   </ul>
 </nav>
-
 <header class="hero">
   <div class="bloom" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
   <div class="hero__inner">
-    <svg class="doodle" width="56" height="48" viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M8 10c0 0 4 8 2 16" stroke="#D9A441" stroke-width="3" stroke-linecap="round"/>
-      <path d="M18 6c0 0 3 9 0 16" stroke="#C97B84" stroke-width="3" stroke-linecap="round"/>
-      <path d="M40 30c-7-6-14-2-12 5 2 6 9 8 12 11 3-3 10-5 12-11 2-7-5-11-12-5z" fill="#A85D68"/>
-    </svg>
+    <svg class="doodle" width="56" height="48" viewBox="0 0 56 48" fill="none" aria-hidden="true"><path d="M8 10c0 0 4 8 2 16" stroke="#D9A441" stroke-width="3" stroke-linecap="round"/><path d="M18 6c0 0 3 9 0 16" stroke="#C97B84" stroke-width="3" stroke-linecap="round"/><path d="M40 30c-7-6-14-2-12 5 2 6 9 8 12 11 3-3 10-5 12-11 2-7-5-11-12-5z" fill="#A85D68"/></svg>
     <h1>Little Sai and His Village of Love</h1>
-    <p class="lede">This is where his tree begins. His 100th day is the first branch — every celebration after adds another. The videos, the photos, the wishes are the leaves that fill in around them, month by month.</p>
-    <div class="age-counter" data-age-counter aria-live="polite">
-      <span class="age-counter__num">calculating…</span>
-    </div>
+    <p class="lede">A growing home for the people, stories, celebrations and everyday care that surround Sai. Every milestone adds a branch; every photo, wish and memory becomes a leaf.</p>
+    <div class="age-counter" data-age-counter aria-live="polite"><span class="age-counter__num">calculating…</span></div>
   </div>
 </header>
-
-<section class="band" id="latest-event">
-  <div class="wrap">
-    <div class="section-head">
-      <svg class="doodle doodle--start" width="44" height="38" viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M8 10c0 0 4 8 2 16" stroke="#5B7B5A" stroke-width="3" stroke-linecap="round"/>
-        <path d="M18 6c0 0 3 9 0 16" stroke="#D9A441" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-      <h2>The first branch</h2>
-      <p>Everything the village needs for Sai's 100th day, gathered in one place.</p>
-    </div>
-    <a class="event-card" href="event-100-days.html">
-      <span class="event-card__date">September 19, 2026 · 100 Days</span>
-      <h3>Sai's 100 Days Celebration</h3>
-      <p>Logistics, the RSVP, the menu, and the traditions we're sharing with him.</p>
-    </a>
-  </div>
-</section>
-
-<section class="band band--deep">
+<main>
+<section class="band band--deep" id="explore" aria-labelledby="explore-title">
   <div class="wrap wrap--wide">
-    <div class="section-head">
-      <h2>Growing, one month at a time</h2>
-      <p>A new video from Sai every month. Four so far — <a href="videos.html">see them all</a>.</p>
-    </div>
-    <div class="video-grid">
-      <div class="video-card">
-        <div class="video-card__frame">
-          <iframe src="https://drive.google.com/file/d/1nqriXIKPjm0snu_6iXQD0AJx6Z17biVg/preview" allow="autoplay"></iframe>
-        </div>
-        <div class="video-card__caption"><span>Month 1</span>The very beginning.</div>
-      </div>
-
-      <div class="video-card">
-        <div class="video-card__frame">
-          <iframe src="https://drive.google.com/file/d/1RsJW-fxvqpUYWxWwo6vEtDllq6NZfSy_/preview" allow="autoplay"></iframe>
-        </div>
-        <div class="video-card__caption"><span>Month 2</span>Happy birthday daddy!</div>
-      </div>
-
-      <div class="video-card">
-        <div class="video-card__frame">
-          <iframe src="https://drive.google.com/file/d/14MxPdXMWeFQA1IyDcNqHHHWcwjr_h_4y/preview" allow="autoplay"></iframe>
-        </div>
-        <div class="video-card__caption"><span>Month 3</span>More of his cute smiles every day.</div>
-      </div>
-
-      <div class="video-card">
-        <div class="video-card__frame">
-          <iframe src="https://drive.google.com/file/d/1S5MoYTsGo1mtJxEmKWaAV_BfxhKIQl7a/preview" allow="autoplay"></iframe>
-        </div>
-        <div class="video-card__caption"><span>Month 4</span>Getting more curious about the world.</div>
-      </div>
+    <div class="section-head"><span class="village-kicker">Find your way around</span><h2 id="explore-title">Explore the Village</h2><p>Three parts of Sai's world: practical tools, the people who love him, and the moments we share. Every link below opens an existing destination.</p></div>
+    <div class="village-grid">
+      <section class="village-group" aria-labelledby="utilities-heading"><h3 id="utilities-heading">Utilities · 实用工具</h3><p>Little things that make caregiving easier.</p><div class="village-links">
+        <a href="nanny.html"><span>Nanny Guide<small>Care instructions</small></span></a>
+        <a href="starting-solid.html"><span>First Foods · 第一口辅食<small>Bilingual food guidance</small></span></a>
+        <a href="tools/baby-tracker/index.html"><span>Baby Tracker<small>Everyday care log</small></span></a>
+      </div></section>
+      <section class="village-group" aria-labelledby="people-heading"><h3 id="people-heading">People · 家人</h3><p>The memories and voices of Sai's village.</p><div class="village-links">
+        <a href="great-grandpa-yin-xiuli-memorial.html"><span>Great-Grandpa Yin Xiuli · 殷修力<small>A life and legacy remembered</small></span></a>
+        <a href="wishes.html"><span>Wishes · 祝福<small>Words from family and friends</small></span></a>
+        <a href="photos.html"><span>Photos · 照片<small>Family album links</small></span></a>
+        <a href="videos.html"><span>Monthly Videos · 成长视频<small>Sai growing month by month</small></span></a>
+      </div></section>
+      <section class="village-group" aria-labelledby="events-heading"><h3 id="events-heading">Events · 活动</h3><p>Our celebrations, big and small.</p><div class="village-links">
+        <a href="events.html"><span>All Events<small>The celebrations archive</small></span></a>
+        <a href="event-100-days.html"><span>100 Days · 百日宴<small>Sai's first big celebration</small></span></a>
+      </div></section>
     </div>
   </div>
 </section>
-
-<section class="band">
-  <div class="wrap wrap--wide">
-    <div class="duo">
-      <div class="card">
-        <h3>Photos</h3>
-        <p>Add yours to the shared album, or just send them straight to Alice or Sid.</p>
-        <a class="btn btn--gold" href="https://docs.google.com/forms/d/e/1FAIpQLSck1Lhmr4aDoOdKxD6Imz7izCbInhyLua3lFPRnCYdYaZC5zA/viewform" target="_blank" rel="noopener">Add your photos</a>
-        <p style="margin-top:10px; font-size:0.9rem;"><a href="https://photos.app.goo.gl/hUq8GxbNhTS6TA479" target="_blank" rel="noopener">View the album</a></p>
-      </div>
-      <div class="card">
-        <h3>Leave a wish</h3>
-        <p>A hope, a memory, a piece of advice — anything you'd want him to read one day.</p>
-        <a class="btn btn--primary" href="wishes.html">Write a wish</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="band band--deep" id="story">
-  <div class="wrap">
-    <div class="section-head">
-      <h2>The tree, so far</h2>
-      <p>Every milestone gets a branch. Here's where his starts.</p>
-    </div>
-    <ul class="tree" data-tree>
-      <li class="tree__node"><p>Loading…</p></li>
-    </ul>
-  </div>
-</section>
-
-<footer class="site-footer">
-  <p>Kept with love, for Sai to find one day. &middot; <a href="events.html">Events</a> &middot; <a href="videos.html">Videos</a> &middot; <a href="wishes.html">Wishes</a> &middot; <a href="nanny.html">Nanny Guide</a> &middot; <a href="tools/baby-tracker/index.html">Tracker</a></p>
-</footer>
-
+<section class="band" id="latest-event"><div class="wrap"><div class="section-head"><h2>The first branch</h2><p>A day to remember: Sai's 100 Days celebration.</p></div><a class="event-card" href="event-100-days.html"><span class="event-card__date">September 19, 2026 · 100 Days</span><h3>Sai's 100 Days Celebration</h3><p>Family, traditions, photographs, and all the little details of this day.</p></a></div></section>
+<section class="band band--deep" id="monthly-videos"><div class="wrap wrap--wide"><div class="section-head"><h2>Growing, one month at a time</h2><p>Five monthly videos so far — <a href="videos.html">watch the complete collection</a>.</p></div><div class="video-grid">
+  <div class="video-card"><div class="video-card__frame"><iframe src="https://drive.google.com/file/d/1nqriXIKPjm0snu_6iXQD0AJx6Z17biVg/preview" title="Sai monthly video, Month 1" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></div><div class="video-card__caption"><span>Month 1</span>The very beginning.</div></div>
+  <div class="video-card"><div class="video-card__frame"><iframe src="https://drive.google.com/file/d/1RsJW-fxvqpUYWxWwo6vEtDllq6NZfSy_/preview" title="Sai monthly video, Month 2 — Happy birthday daddy!" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></div><div class="video-card__caption"><span>Month 2</span>Happy birthday daddy!</div></div>
+  <div class="video-card"><div class="video-card__frame"><iframe src="https://drive.google.com/file/d/14MxPdXMWeFQA1IyDcNqHHHWcwjr_h_4y/preview" title="Sai monthly video, Month 3" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></div><div class="video-card__caption"><span>Month 3</span>More of his cute smiles every day.</div></div>
+  <div class="video-card"><div class="video-card__frame"><iframe src="https://drive.google.com/file/d/1S5MoYTsGo1mtJxEmKWaAV_BfxhKIQl7a/preview" title="Sai monthly video, Month 4" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></div><div class="video-card__caption"><span>Month 4</span>Getting more curious about the world.</div></div>
+  <div class="video-card" id="month-5"><div class="video-card__frame"><iframe src="https://drive.google.com/file/d/170yX3idJxtSIpFsntWFlgjOhcJYgQy4o/preview" title="Sai monthly video, Month 5 — Happy birthday Mama and Happy Diwali!" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></div><div class="video-card__caption"><span>Month 5</span>Happy birthday Mama and Happy Diwali!</div></div>
+</div><p class="video-note">If an embedded video says you need access, ask the owner to share that Google Drive file with you.</p></div></section>
+<section class="band"><div class="wrap wrap--wide"><div class="duo"><div class="card"><h3>Photos</h3><p>Add yours to the shared album, or send them straight to Alice or Sid.</p><a class="btn btn--gold" href="https://docs.google.com/forms/d/e/1FAIpQLSck1Lhmr4aDoOdKxD6Imz7izCbInhyLua3lFPRnCYdYaZC5zA/viewform" target="_blank" rel="noopener noreferrer">Add your photos</a><p style="margin-top:10px;font-size:.9rem;"><a href="https://photos.app.goo.gl/hUq8GxbNhTS6TA479" target="_blank" rel="noopener noreferrer">View the album</a> · <a href="photos.html">Photo page</a></p></div><div class="card"><h3>Leave a wish</h3><p>A hope, a memory, a piece of advice — anything you want Sai to read one day.</p><a class="btn btn--primary" href="wishes.html">Write a wish</a></div></div></div></section>
+<section class="band band--deep" id="story"><div class="wrap"><div class="section-head"><h2>The tree, so far</h2><p>Every milestone gets a branch. Here's where his starts.</p></div><ul class="tree" data-tree><li class="tree__node"><p>Loading…</p></li></ul></div></section>
+</main>
+<footer class="site-footer"><p>Kept with love, for Sai to find one day. · <a href="#explore">Explore</a> · <a href="events.html">Events</a> · <a href="videos.html">Videos</a> · <a href="wishes.html">Wishes</a> · <a href="starting-solid.html">First Foods</a> · <a href="nanny.html">Nanny Guide</a> · <a href="tools/baby-tracker/index.html">Tracker</a></p></footer>
 <script src="js/main.js"></script>
-</body>
-</html>
+</body></html>
